@@ -122,3 +122,25 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.clock_butler/pyvenv.cfg
+.clock_butler/bin/activate
+.clock_butler/bin/activate.csh
+.clock_butler/bin/activate.fish
+.clock_butler/bin/Activate.ps1
+.clock_butler/bin/black
+.clock_butler/bin/black-primer
+.clock_butler/bin/blackd
+.clock_butler/bin/dmypy
+.clock_butler/bin/keyring
+.clock_butler/bin/mypy
+.clock_butler/bin/mypyc
+.clock_butler/bin/normalizer
+.clock_butler/bin/pip
+.clock_butler/bin/pip3
+.clock_butler/bin/pip3.10
+.clock_butler/bin/python
+.clock_butler/bin/python3
+.clock_butler/bin/python3.10
+.clock_butler/bin/stubgen
+.clock_butler/bin/stubtest
+.vscode/settings.json
