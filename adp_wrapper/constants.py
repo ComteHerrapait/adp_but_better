@@ -1,4 +1,6 @@
+import json
 from datetime import timedelta
+from pathlib import Path
 
 # Date formats
 ADP_DATE_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
@@ -21,3 +23,35 @@ URL_REQUEST_WFH_SUBMIT = "https://mon.adp.com/events/time/v1/time-off-request.su
 URL_TIMEOFF_REQUESTS = (
     "https://mon.adp.com/time/v3/workers/" + "__REDACTED__" + "/time-off-requests"
 )
+
+SETTINGS_FILE = Path("config.json")
+DEFAULT_SETTINGS = {
+    "adp_username": "",
+}
+
+
+def get_setting(key: str) -> str | None:
+    if SETTINGS_FILE.exists():
+        with open("config.json", "r") as f:
+            value = json.load(f).get(key, None)
+    else:
+        value = None
+
+    if value is None:
+        set_setting(key, DEFAULT_SETTINGS[key])
+        value = DEFAULT_SETTINGS[key]
+
+    return value
+
+
+def set_setting(key: str, value: str) -> None:
+    if SETTINGS_FILE.exists():
+        with SETTINGS_FILE.open("r") as f:
+            settings = json.load(f)
+    else:
+        settings = DEFAULT_SETTINGS
+
+    settings[key] = value
+
+    with SETTINGS_FILE.open("w") as f:
+        json.dump(settings, f, indent=4)
