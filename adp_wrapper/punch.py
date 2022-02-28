@@ -7,6 +7,14 @@ from adp_wrapper.constants import URL_PUNCH, URL_PUNCH_SUBMIT
 
 
 def get_punch_times(s: requests.Session) -> list[datetime]:
+    """get the punch times from adp
+
+    Args:
+        s (requests.Session): browser session
+
+    Returns:
+        list[datetime]: list of punch times
+    """
     params = (("entryNotes", "yes"),)  # does not seem to change anything
     response = s.get(URL_PUNCH, params=params)
 
@@ -29,6 +37,15 @@ def get_punch_times(s: requests.Session) -> list[datetime]:
 
 
 def punch(s: requests.Session, timestamp: datetime) -> bool:
+    """clocks in or out to adp
+
+    Args:
+        s (requests.Session): browser session
+        timestamp (datetime): time at which to punch
+
+    Returns:
+        bool: response was successful
+    """
 
     time = timestamp.strftime("%Y-%m-%dT%H:%M:%S")
     data = {

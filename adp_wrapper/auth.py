@@ -15,14 +15,24 @@ from adp_wrapper.constants import (
 
 
 class NoPasswordFoundException(Exception):
+    """no password found in keyring"""
+
     pass
 
 
 class UnableToLoginException(Exception):
+    """Login to adp was not successful"""
+
     pass
 
 
 def adp_login() -> requests.Session:
+    """logs in to adp, by asking for username and password through command line
+    interface
+
+    Returns:
+        requests.Session: session created by login in
+    """
     session = requests.Session()
     logged_in = False
     while not logged_in:
@@ -45,6 +55,16 @@ def adp_login() -> requests.Session:
 
 
 def send_login_request(session: requests.Session, username: str, password: str) -> None:
+    """send the login request (POST)
+
+    Args:
+        session (requests.Session)
+        username (str)
+        password (str)
+
+    Raises:
+        UnableToLoginException
+    """
     data = {
         "user": username,
         "password": password,
@@ -57,6 +77,12 @@ def send_login_request(session: requests.Session, username: str, password: str) 
 
 
 def get_username() -> str:
+    """get username, from command line or from config file
+
+    Returns:
+        str: username
+    """
+
     config_value = get_setting("adp_username")
     if not config_value:
         term_value = input(USERNAME_PROMPT) or None
@@ -71,6 +97,17 @@ def get_username() -> str:
 
 
 def get_password(username: str) -> str:
+    """get password, from command line or from keyring
+
+    Args:
+        username (str): username for which to get password
+
+    Raises:
+        NoPasswordFoundException
+
+    Returns:
+        str: password
+    """
     if (term_value := getpass(PASSWORD_PROMPT)) == "":
         keyring_value = keyring.get_password(APP_NAME, username)
         if keyring_value is None:

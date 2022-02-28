@@ -31,6 +31,14 @@ DEFAULT_SETTINGS = {
 
 
 def get_setting(key: str) -> str | None:
+    """get a setting from the config file
+
+    Args:
+        key (str): name of the setting to get
+
+    Returns:
+        str | None: value of the setting, or None if not found
+    """
     if SETTINGS_FILE.exists():
         with open("config.json", "r") as f:
             value = json.load(f).get(key, None)
@@ -45,6 +53,12 @@ def get_setting(key: str) -> str | None:
 
 
 def set_setting(key: str, value: str) -> None:
+    """set the value of a setting in the config file
+
+    Args:
+        key (str): name of the setting to set
+        value (str): value of the setting
+    """
     if SETTINGS_FILE.exists():
         with SETTINGS_FILE.open("r") as f:
             settings = json.load(f)
