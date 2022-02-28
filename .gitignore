@@ -144,3 +144,5 @@ dmypy.json
 .venv/bin/stubgen
 .venv/bin/stubtest
 .vscode/settings.json
+
+config.json
