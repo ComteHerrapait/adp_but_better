@@ -38,6 +38,7 @@ else
     fi
 fi
 
+
 if [update_requirements = "true"]; then
     # install dependancies
     echo "updating python requirements"
