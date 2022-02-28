@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from art import tprint
+import art
 
 from adp_wrapper.auth import adp_login
 from adp_wrapper.CLI_utils import display_punch_times
@@ -9,7 +9,7 @@ from adp_wrapper.punch import get_punch_times, punch
 if __name__ == "__main__":
     # Welcome message
     print("\033[H\033[J", end="")
-    tprint("ADP but better\n", font="tarty1")
+    art.tprint("ADP but better\n", font="tarty1")
 
     # login
     session = adp_login()
