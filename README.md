@@ -13,4 +13,4 @@ I also try to implement workflows as a test to gain experience using them.
 - create a virtual environment called .venv
 - install dependancies from requirements.txt
 - fill in the config file (optionnal)
-- run main.py with your python environment
+- run main.py through the run.sh bash file

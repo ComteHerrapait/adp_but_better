@@ -4,9 +4,11 @@ echo "Program start."
 
 update_requirements='false'
 
-while getopts ':u' flag; do
+while getopts 'u' flag; do
     case "${flag}" in
-    u) update_requirements='true' ;;
+    u)
+        update_requirements='true'
+        ;;
     *)
         echo "invalid argument $@"
         exit 1
@@ -37,7 +39,6 @@ else
         echo "running out of date version..."
     fi
 fi
-
 
 if [update_requirements = "true"]; then
     # install dependancies
