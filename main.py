@@ -1,15 +1,50 @@
 from datetime import datetime
 
-import art
+import inquirer
+from requests import Session
 
 from adp_wrapper.auth import adp_login
-from adp_wrapper.CLI_utils import display_punch_times
-from adp_wrapper.punch import get_punch_times, punch
+from adp_wrapper.CLI_utils import display_punch_times, print_header, validate_and_punch
+from adp_wrapper.constants import GOODBYE_MESSAGE
+from adp_wrapper.punch import get_punch_times
+
+
+def main_loop(session: Session):
+    questions = [
+        inquirer.List(
+            "action",
+            message="What do you want to do now ?",
+            choices=["Punch now", "Punch at specific time", "Exit"],
+            carousel=True,
+        ),
+    ]
+    match inquirer.prompt(questions).get("action"):
+        case "Punch now":
+            punch_time = datetime.now()
+
+            validate_and_punch(session, punch_time)
+            return True
+
+        case "Punch at specific time":
+            punch_time = datetime.now()
+            hour = int(input("Hour : ") or punch_time.hour)
+            minutes = int(input("Minutes : ") or punch_time.minute)
+            try:
+                punch_time = punch_time.replace(hour=hour, minute=minutes)
+            except ValueError:
+                print("Cette horaire n'est pas valide")
+                return True
+
+            validate_and_punch(session, punch_time)
+            return True
+
+        case "Exit":
+            return False
+
 
 if __name__ == "__main__":
     # Welcome message
-    print("\033[H\033[J", end="")
-    art.tprint("ADP but better\n", font="tarty1")
+    print_header(True)
 
     # login
     session = adp_login()
@@ -18,22 +53,7 @@ if __name__ == "__main__":
     timestamps = get_punch_times(session)
     display_punch_times(timestamps)
 
-    # let you punch in or out with the terminal
-    if input("Punch ? (y/n)") == "y":
-        # get the punch time through terminal interaction
-        punch_time = datetime.now()
-        hour = int(input("Hour : ") or punch_time.hour)
-        minutes = int(input("Minutes : ") or punch_time.minute)
-        punch_time = punch_time.replace(hour=hour, minute=minutes)
-        punch_time_str = punch_time.strftime("%A(%d) %H:%M")
+    while main_loop(session):
+        print_header(False)
 
-        # let the user validate the punch time
-        if input(f"Punching at {punch_time_str} (y/n)") == "y":
-            if punch(session, punch_time):
-                print("Punch successfully sent")
-                timestamps = get_punch_times(session)
-                display_punch_times(timestamps)
-            else:
-                print("Punch failed")
-        else:
-            print("Punch cancelled")
+    exit(GOODBYE_MESSAGE)
