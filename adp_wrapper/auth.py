@@ -82,6 +82,7 @@ def get_username() -> str:
     Returns:
         str: username
     """
+
     config_value = get_setting("adp_username")
     if not config_value:
         term_value = input(USERNAME_PROMPT) or None
