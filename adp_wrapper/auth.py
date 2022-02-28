@@ -1,4 +1,3 @@
-import json
 from getpass import getpass
 
 import keyring
@@ -10,6 +9,8 @@ from adp_wrapper.constants import (
     PASSWORD_PROMPT,
     URL_LOGIN,
     USERNAME_PROMPT,
+    get_setting,
+    set_setting,
 )
 
 
@@ -38,6 +39,8 @@ def adp_login() -> requests.Session:
             print("Please provide a password")
         except KeyboardInterrupt:
             exit(GOODBYE_MESSAGE)
+    # save username if login successful
+    set_setting("adp_username", username)
     return session
 
 
@@ -53,19 +56,15 @@ def send_login_request(session: requests.Session, username: str, password: str) 
         raise UnableToLoginException(f"Unable to login to '{username}'")
 
 
-def get_username(prompt_user: bool = False) -> str:
-    """TODO: refactor this"""
-    if prompt_user:
-        print(USERNAME_PROMPT, end="")
-        term_value = input("") or None
-        if term_value is None:
-            with open("config.json") as f:
-                return_value = json.load(f).get("adp_username", "")
-            # erase the prompt line to write the default value
-            print("\033[1A" + USERNAME_PROMPT + return_value + "\033[K")
+def get_username() -> str:
+    config_value = get_setting("adp_username")
+    if not config_value:
+        term_value = input(USERNAME_PROMPT) or None
+        while term_value is None:
+            term_value = input(USERNAME_PROMPT + "(again)") or None
+        return_value = term_value
     else:
-        with open("config.json") as f:
-            return_value = json.load(f).get("adp_username", "")
+        return_value = config_value
         print(USERNAME_PROMPT + return_value + " (from config)")
 
     return return_value
