@@ -1,6 +1,7 @@
 import json
 from datetime import timedelta
 from pathlib import Path
+from typing import Any
 
 # Date formats
 ADP_DATE_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
@@ -20,6 +21,8 @@ URL_LOGIN = "https://mon.adp.com/ipclogin/1/loginform.fcc"
 URL_PUNCH = "https://mon.adp.com/v1_0/O/A/timeEntryDetails"
 URL_PUNCH_SUBMIT = "https://mon.adp.com/v1_0/O/A/timeEntry"
 URL_REQUEST_WFH_SUBMIT = "https://mon.adp.com/events/time/v1/time-off-request.submit"
+URL_SEARCH_USERS = "https://mon.adp.com/core/v1/search"
+URL_DETAIL_USER = "https://mon.adp.com/redboxapi/core/profile/v1/associates/"
 URL_TIMEOFF_REQUESTS = (
     "https://mon.adp.com/time/v3/workers/" + "__REDACTED__" + "/time-off-requests"
 )
@@ -27,17 +30,18 @@ URL_TIMEOFF_REQUESTS = (
 SETTINGS_FILE = Path("config.json")
 DEFAULT_SETTINGS = {
     "adp_username": "",
+    "skip_password_prompt": False,
 }
 
 
-def get_setting(key: str) -> str | None:
+def get_setting(key: str) -> Any:
     """get a setting from the config file
 
     Args:
         key (str): name of the setting to get
 
     Returns:
-        str | None: value of the setting, or None if not found
+        Any: value of the setting
     """
     if SETTINGS_FILE.exists():
         with open("config.json", "r") as f:
@@ -52,12 +56,12 @@ def get_setting(key: str) -> str | None:
     return value
 
 
-def set_setting(key: str, value: str) -> None:
+def set_setting(key: str, value: Any) -> None:
     """set the value of a setting in the config file
 
     Args:
         key (str): name of the setting to set
-        value (str): value of the setting
+        value (Any): value of the setting
     """
     if SETTINGS_FILE.exists():
         with SETTINGS_FILE.open("r") as f:

@@ -44,9 +44,11 @@ def adp_login() -> requests.Session:
         except UnableToLoginException as e:
             print(e)
             print("Please try again, check your credentials")
+            set_setting("skip_password_prompt", False)
         except NoPasswordFoundException as e:
             print(e)
             print("Please provide a password")
+            set_setting("skip_password_prompt", False)
         except KeyboardInterrupt:
             exit(GOODBYE_MESSAGE)
     # save username if login successful
@@ -91,7 +93,7 @@ def get_username() -> str:
         return_value = term_value
     else:
         return_value = config_value
-        print(USERNAME_PROMPT + return_value + " (from config)")
+        print(USERNAME_PROMPT + return_value + " -config-")
 
     return return_value
 
@@ -108,13 +110,17 @@ def get_password(username: str) -> str:
     Returns:
         str: password
     """
-    if (term_value := getpass(PASSWORD_PROMPT)) == "":
+    skip_password = get_setting("skip_password_prompt")
+    if skip_password or ((term_value := getpass(PASSWORD_PROMPT)) == ""):
         keyring_value = keyring.get_password(APP_NAME, username)
         if keyring_value is None:
             raise NoPasswordFoundException("No password provided or stored in keyring")
         else:
-            # erase the prompt line to print a message
-            print("\033[1A" + PASSWORD_PROMPT + " -keyring- " + "\033[K")
+            if skip_password:
+                print(PASSWORD_PROMPT + " -keyring- (auto)")
+            else:
+                # erase the prompt line to print a message
+                print("\033[1A" + PASSWORD_PROMPT + " -keyring- " + "\033[K")
             return_value = keyring_value
     else:
         keyring.set_password(APP_NAME, username, term_value)
