@@ -44,9 +44,11 @@ def adp_login() -> requests.Session:
         except UnableToLoginException as e:
             print(e)
             print("Please try again, check your credentials")
+            set_setting("skip_password_prompt", False)
         except NoPasswordFoundException as e:
             print(e)
             print("Please provide a password")
+            set_setting("skip_password_prompt", False)
         except KeyboardInterrupt:
             exit(GOODBYE_MESSAGE)
     # save username if login successful
