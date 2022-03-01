@@ -4,7 +4,12 @@ import inquirer
 from requests import Session
 
 from adp_wrapper.auth import adp_login
-from adp_wrapper.CLI_utils import display_punch_times, print_header, validate_and_punch
+from adp_wrapper.CLI_utils import (
+    display_punch_times,
+    print_header,
+    search_users,
+    validate_and_punch,
+)
 from adp_wrapper.constants import GOODBYE_MESSAGE
 from adp_wrapper.punch import get_punch_times
 
@@ -14,7 +19,12 @@ def main_loop(session: Session):
         inquirer.List(
             "action",
             message="What do you want to do now ?",
-            choices=["Punch now", "Punch at specific time", "Exit"],
+            choices=[
+                "Punch now",
+                "Punch at specific time",
+                "Search Users",
+                "Exit",
+            ],
             carousel=True,
         ),
     ]
@@ -36,6 +46,10 @@ def main_loop(session: Session):
                 return True
 
             validate_and_punch(session, punch_time)
+            return True
+
+        case "Search Users":
+            search_users(session)
             return True
 
         case "Exit":

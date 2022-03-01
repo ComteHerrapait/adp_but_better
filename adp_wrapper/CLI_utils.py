@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
 
 import art
+import inquirer
 from requests import Session
 
 from adp_wrapper.punch import get_punch_times, punch
+from adp_wrapper.search_user import get_users_info
 from adp_wrapper.time_processing import get_daily_stats
 
 """
@@ -70,8 +72,7 @@ def user_validation_punch(punch_time: datetime) -> bool:
         bool: user validated
     """
     punch_time_str = punch_time.strftime("%A(%d) %H:%M")
-    validated = input(f"Punching at {punch_time_str} (y/n)") == "y"
-    return validated
+    return inquirer.confirm(f"Punching at {punch_time_str}")
 
 
 def validate_and_punch(session: Session, punch_time: datetime) -> None:
@@ -90,3 +91,23 @@ def validate_and_punch(session: Session, punch_time: datetime) -> None:
             print("Punch failed")
     else:
         print("Punch cancelled")
+
+
+def search_users(session: Session) -> None:
+    """search for users in the ADP database.
+
+    Args:
+        session (Session): browser session
+        search_term (str): search term
+    """
+    questions = [
+        inquirer.Text(
+            "query",
+            message="search query",
+        ),
+    ]
+    answers = inquirer.prompt(questions)
+    query = answers["query"]
+    users = get_users_info(session, query)
+    for user in users:
+        print(f"* {user['name']:<20} -> {user['id']}")
