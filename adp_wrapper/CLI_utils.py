@@ -53,7 +53,7 @@ def display_punch_times(timestamps: list[datetime]) -> None:
 
         print(f">> {len(timestamps)} punches today. ")
         print(f"time worked today : {format_timedelta(worked_time)} ", end="")
-        time_sign_indicator = {"restant" if (remaining_time > timedelta()) else "sup"}
+        time_sign_indicator = "restant" if (remaining_time > timedelta()) else "sup"
         print(f"({format_timedelta(remaining_time)} {time_sign_indicator})")
 
         print(f"You are clocked {'OUT' if len(timestamps) % 2 == 0 else 'IN'}")
@@ -93,12 +93,15 @@ def validate_and_punch(session: Session, punch_time: datetime) -> None:
         print("Punch cancelled")
 
 
-def search_users(session: Session) -> None:
+def search_users(session: Session) -> list[dict]:
     """search for users in the ADP database.
 
     Args:
         session (Session): browser session
         search_term (str): search term
+
+    Returns:
+        list[dict]: list of users matching query
     """
     questions = [
         inquirer.Text(
@@ -109,5 +112,4 @@ def search_users(session: Session) -> None:
     answers = inquirer.prompt(questions)
     query = answers["query"]
     users = get_users_info(session, query)
-    for user in users:
-        print(f"* {user['name']:<20} -> {user['id']}")
+    return users

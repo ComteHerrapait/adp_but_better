@@ -3,7 +3,7 @@ from datetime import datetime
 
 import requests
 
-from adp_wrapper.constants import URL_PUNCH, URL_PUNCH_SUBMIT
+from adp_wrapper.constants import URL_PUNCH, URL_PUNCH_SUBMIT, get_setting
 
 
 def get_punch_times(s: requests.Session) -> list[datetime]:
@@ -46,13 +46,14 @@ def punch(s: requests.Session, timestamp: datetime) -> bool:
     Returns:
         bool: response was successful
     """
+    user_id = str(get_setting("adp_username"))
 
     time = timestamp.strftime("%Y-%m-%dT%H:%M:%S")
     data = {
         "timeEntry": {
             "metadeviceDateTime": time + "+01:00",
             "positionID": {
-                "id": "__REDACTED__",
+                "id": user_id,
                 "schemeName": "PFID",
                 "schemeAgencyName": "ADP Registry",
             },

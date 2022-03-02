@@ -49,7 +49,8 @@ def main_loop(session: Session):
             return True
 
         case "Search Users":
-            search_users(session)
+            for user in search_users(session):
+                print(f"* {user['name']:<20} -> {user['id']}")
             return True
 
         case "Exit":
