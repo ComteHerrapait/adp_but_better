@@ -4,6 +4,7 @@ import inquirer
 from requests import Session
 
 from adp_wrapper.auth import adp_login
+from adp_wrapper.balance import get_balances
 from adp_wrapper.CLI_utils import (
     display_punch_times,
     print_header,
@@ -22,7 +23,8 @@ def main_loop(session: Session):
             choices=[
                 "Punch now",
                 "Punch at specific time",
-                "Search Users",
+                "Get balance",
+                "Search users",
                 "Exit",
             ],
             carousel=True,
@@ -48,9 +50,21 @@ def main_loop(session: Session):
             validate_and_punch(session, punch_time)
             return True
 
-        case "Search Users":
-            for user in search_users(session):
+        case "Search users":
+            users = search_users(session)
+            if not users:
+                print("No users matching query found")
+            for user in users:
                 print(f"* {user['name']:<20} -> {user['id']}")
+            return True
+
+        case "Get balance":
+            balances = get_balances(session)
+            if not balances:
+                print("No balance found")
+
+            for balance in balances:
+                print(f"{balance['name']:<20}: {balance['value']} ({balance['unit']})")
             return True
 
         case "Exit":
