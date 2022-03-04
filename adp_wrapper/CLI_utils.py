@@ -1,4 +1,8 @@
-from datetime import datetime, timedelta
+import dataclasses
+from datetime import date, datetime, timedelta
+from enum import Enum
+from json import JSONEncoder, dumps
+from typing import Any
 
 import art
 import inquirer
@@ -11,6 +15,31 @@ from adp_wrapper.time_processing import get_daily_stats
 """
 These functions serve to display and interact with the user through the terminal.
 """
+
+
+class EnhancedJSONEncoder(JSONEncoder):
+    """Enhances the JSONEncoder class to handle dataclasses, datetime and Enum."""
+
+    def default(self, o):
+        if dataclasses.is_dataclass(o):
+            return dataclasses.asdict(o)
+        elif isinstance(o, datetime):
+            return o.isoformat()
+        elif isinstance(o, date):
+            return o.isoformat()
+        elif isinstance(o, Enum):
+            return o.value
+        return super().default(o)
+
+
+def print_json(obj: Any, **kwargs) -> None:
+    """Prints a JSON representation of the given object.
+
+    Args:
+        obj (Any): object to print
+        **kwargs: additional arguments passed to json.dumps
+    """
+    print(dumps(obj, cls=EnhancedJSONEncoder, **kwargs))
 
 
 def print_header(clear: bool = True) -> None:
