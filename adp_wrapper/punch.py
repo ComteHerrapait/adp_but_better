@@ -1,12 +1,12 @@
 import json
 from datetime import datetime
 
-import requests
+from requests import Session
 
-from adp_wrapper.constants import URL_PUNCH, URL_PUNCH_SUBMIT, get_setting
+from adp_wrapper.constants import URL_PUNCH, URL_PUNCH_SUBMIT, URL_REFERER, get_setting
 
 
-def get_punch_times(s: requests.Session) -> list[datetime]:
+def get_punch_times(s: Session) -> list[datetime]:
     """get the punch times from adp
 
     Args:
@@ -36,7 +36,7 @@ def get_punch_times(s: requests.Session) -> list[datetime]:
     return result
 
 
-def punch(s: requests.Session, timestamp: datetime) -> bool:
+def punch(s: Session, timestamp: datetime) -> bool:
     """clocks in or out to adp
 
     Args:
@@ -65,8 +65,8 @@ def punch(s: requests.Session, timestamp: datetime) -> bool:
         "Content-Type": "application/json;charset=UTF-8",
         "Accept": "application/json, text/plain, */*",
         "Origin": "https://mon.adp.com",
-        "Referer": "https://mon.adp.com/redbox/3.10.1.2/",
+        "Referer": URL_REFERER,
     }
 
     response_punch = s.post(URL_PUNCH_SUBMIT, data=data_str, headers=headers)
-    return response_punch.status_code == 201
+    return response_punch.ok

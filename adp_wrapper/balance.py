@@ -1,0 +1,65 @@
+from datetime import datetime
+
+from requests import Session
+
+from adp_wrapper.constants import URL_BALANCES, URL_REFERER, get_setting
+
+
+def get_balances(session: Session) -> list[dict]:
+    """gets the balances of a user, such as the amount of time off and overtime
+    Args:
+        session (Session): session object
+    Returns:
+        list[dict]: list of balances
+    """
+    raw_balances = send_balances_request(session)
+    summary = []
+
+    if not raw_balances:
+        return []
+
+    raw_balances = raw_balances["timeOffBalances"][0]["timeOffPolicyBalances"]
+
+    for item in raw_balances:
+        parsed_item = {
+            "name": item["timeOffPolicyCode"]["longName"],
+            "description": None,
+            "value": None,
+            "unit": None,
+        }
+        balance = item["policyBalances"][0]
+
+        match parsed_item.get("name"):
+            case "Débit crédit":
+                parsed_item["description"] = balance["balanceTypeCode"]["shortName"]
+                parsed_item["value"] = balance["totalTime"]["timeValue"]
+                parsed_item["unit"] = balance["totalTime"]["nameCode"]["codeValue"]
+            case "RTT Salarié":
+                parsed_item["description"] = balance["balanceTypeCode"]["shortName"]
+                parsed_item["value"] = balance["totalQuantity"]["quantityValue"]
+                parsed_item["unit"] = balance["totalQuantity"]["unitTimeCode"][
+                    "codeValue"
+                ]
+
+        summary.append(parsed_item)
+
+    return summary
+
+
+def send_balances_request(session: Session) -> dict:
+    """sends the request to get the balances from adp API
+
+    Args:
+        session (Session): browser session
+
+    Returns:
+        dict: response from API
+    """
+    headers = {"Referer": URL_REFERER}
+    today = datetime.strftime(datetime.now(), "%Y-%m-%d")
+    params = (("$filter", f"balanceAsOfDate eq '{today}'"),)
+    url = URL_BALANCES.replace("<USER_ID>", get_setting("adp_username"))
+
+    response = session.get(url, headers=headers, params=params)
+
+    return response.json()

@@ -74,7 +74,7 @@ def send_login_request(session: requests.Session, username: str, password: str) 
     }
 
     response_login = session.post(URL_LOGIN, data=data)
-    if not response_login.reason == "OK":
+    if not response_login.ok:
         raise UnableToLoginException(f"Unable to login to '{username}'")
 
 
