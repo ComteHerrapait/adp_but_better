@@ -10,6 +10,7 @@ from requests import Session
 
 from adp_wrapper.punch import get_punch_times, punch
 from adp_wrapper.search_user import get_users_info
+from adp_wrapper.time_off import PeriodCode, get_pay_codes, submit_timeoff_request
 from adp_wrapper.time_processing import get_daily_stats
 
 """
@@ -142,3 +143,69 @@ def search_users(session: Session) -> list[dict]:
     query = answers["query"]
     users = get_users_info(session, query)
     return users
+
+
+def request_time_off(session: Session) -> None:
+    # select event
+    available_codes = get_pay_codes(session)
+    event_code = "TTRAV2"  # TODO : ask user to select an event
+    event = next((event for event in available_codes if event.code == event_code), None)
+    if event is None:
+        raise Exception(f"no pay code matching the code {event_code}")
+
+    # select start date and period
+    dates = [date.today() + timedelta(days=i) for i in range(30)]
+    questions = [
+        inquirer.List(
+            "start_date",
+            message="event start date",
+            choices=dates,
+            carousel=True,
+            default=dates[1],
+        ),
+        inquirer.List(
+            "start_period",
+            message="event start period",
+            choices=["morning", "afternoon"],
+            carousel=True,
+        ),
+        inquirer.List(
+            "end_date",
+            message="event end date",
+            choices=dates,
+            carousel=True,
+            default=dates[1],
+        ),
+        inquirer.List(
+            "end_period",
+            message="event end period",
+            choices=["morning", "afternoon"],
+            carousel=True,
+        ),
+    ]
+    answers = inquirer.prompt(questions)
+
+    event.date_start = answers.get("start_date")
+    if answers.get("start_period") == "morning":
+        event.period_start = PeriodCode.morning
+    elif answers.get("start_period") == "afternoon":
+        event.period_start = PeriodCode.afternoon
+    else:
+        raise Exception("invalid start period")
+
+    # select end date and period
+    event.date_end = answers.get("end_date")
+    if answers.get("end_period") == "morning":
+        event.period_end = PeriodCode.morning
+    elif answers.get("end_period") == "afternoon":
+        event.period_end = PeriodCode.afternoon
+    else:
+        raise Exception("invalid end period")
+
+    # comment
+    question = [inquirer.Text("comment", message="Comment :", ignore=True)]
+    comment = inquirer.prompt(question)["comment"]
+
+    # submit request
+    temp = submit_timeoff_request(session, [event], comment)
+    return temp

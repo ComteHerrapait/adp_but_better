@@ -25,6 +25,7 @@ URL_SEARCH_USERS = "https://mon.adp.com/core/v1/search"
 URL_DETAIL_USER = "https://mon.adp.com/redboxapi/core/profile/v1/associates/"
 URL_BALANCES = "https://mon.adp.com/time/v3/workers/<USER_ID>/time-off-balances"
 URL_TIMEOFF_REQUESTS = "https://mon.adp.com/time/v3/workers/<USER_ID>/time-off-requests"
+URL_TIMEOFF_META = "https://mon.adp.com/events/time/v1/time-off-request.submit/meta"
 URL_REFERER = "https://mon.adp.com/redbox/3.10.1.2"
 
 

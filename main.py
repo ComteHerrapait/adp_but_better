@@ -8,6 +8,8 @@ from adp_wrapper.balance import get_balances
 from adp_wrapper.CLI_utils import (
     display_punch_times,
     print_header,
+    print_json,
+    request_time_off,
     search_users,
     validate_and_punch,
 )
@@ -24,6 +26,7 @@ def main_loop(session: Session):
                 "Punch now",
                 "Punch at specific time",
                 "Get balance",
+                "Request time off",
                 "Search users",
                 "Exit",
             ],
@@ -69,6 +72,11 @@ def main_loop(session: Session):
 
         case "Exit":
             return False
+
+        case "Request time off":
+            preview = request_time_off(session)
+            print_json(preview, indent=4)
+            return True
 
 
 if __name__ == "__main__":

@@ -1,14 +1,12 @@
 from requests import Session
 
-from adp_wrapper.constants import URL_DETAIL_USER, URL_SEARCH_USERS
+from adp_wrapper.constants import URL_DETAIL_USER, URL_REFERER, URL_SEARCH_USERS
 
 
 def send_search_request(session: Session, query: str):
     params = (("q", query), ("searchType", "advance"))
 
-    headers = {
-        "Referer": "https://mon.adp.com/redbox/3.10.1.2/",
-    }
+    headers = {"Referer": URL_REFERER}
 
     response = session.get(
         URL_SEARCH_USERS,
