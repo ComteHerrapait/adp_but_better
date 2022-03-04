@@ -10,7 +10,7 @@ from requests import Session
 
 from adp_wrapper.punch import get_punch_times, punch
 from adp_wrapper.search_user import get_users_info
-from adp_wrapper.time_off import PeriodCode, get_pay_codes, submit_timeoff_request
+from adp_wrapper.time_off import PeriodCode, get_pay_codes, send_timeoff_request
 from adp_wrapper.time_processing import get_daily_stats
 
 """
@@ -207,5 +207,5 @@ def request_time_off(session: Session) -> None:
     comment = inquirer.prompt(question)["comment"]
 
     # submit request
-    temp = submit_timeoff_request(session, [event], comment)
-    return temp
+    success = send_timeoff_request(session, [event], comment)
+    return success

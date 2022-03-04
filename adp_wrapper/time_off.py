@@ -1,7 +1,9 @@
+import dataclasses
 import json
 from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
+from typing import Any
 
 import requests
 from requests import Session
@@ -54,20 +56,53 @@ class TimeOffEvent:
         }
 
 
-def submit_timeoff_request(
+class EnhancedJSONEncoder(json.JSONEncoder):
+    """Enhances the JSONEncoder class to handle dataclasses, datetime and Enum."""
+
+    def default(self, o):
+        if dataclasses.is_dataclass(o):
+            return dataclasses.asdict(o)
+        elif isinstance(o, datetime):
+            return o.isoformat()
+        elif isinstance(o, date):
+            return o.isoformat()
+        elif isinstance(o, Enum):
+            return o.value
+        return super().default(o)
+
+
+def print_json(obj: Any, **kwargs) -> None:
+    """Prints a JSON representation of the given object.
+
+    Args:
+        obj (Any): object to print
+        **kwargs: additional arguments passed to json.dumps
+    """
+    print(json.dumps(obj, cls=EnhancedJSONEncoder, **kwargs))
+
+
+def send_timeoff_request(
     session: Session,
     events: list[TimeOffEvent],
     comment: str = "",
 ):
 
     request_body = build_body_timeoff_request(events, comment)
-    return request_body
-    # TODO : actually send the request
-    # response = session.post(
-    #     URL_REQUEST_WFH_SUBMIT,
-    #     data=request_body,
-    # )
-    # return response.status_code == 200
+
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json;charset=UTF-8",
+        "Origin": "https://mon.adp.com",
+        "Referer": "https://mon.adp.com/redbox/3.10.1.2/",
+    }
+
+    data_str = json.dumps(request_body, separators=(",", ":"))
+    response = session.post(
+        URL_REQUEST_WFH_SUBMIT,
+        data=data_str,
+        headers=headers,
+    )
+    return response.ok
 
 
 def build_body_timeoff_request(events: list[TimeOffEvent], comment: str = ""):
