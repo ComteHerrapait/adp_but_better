@@ -49,10 +49,15 @@ def main_loop(session: Session):
 
         case "Punch at specific time":
             punch_time = datetime.now()
+            print("Specify punch time (values default to now)")
             hour = int(input("Hour : ") or punch_time.hour)
             minutes = int(input("Minutes : ") or punch_time.minute)
+            month = int(input("Month : ") or punch_time.month)
+            day = int(input("Day : ") or punch_time.day)
             try:
-                punch_time = punch_time.replace(hour=hour, minute=minutes)
+                punch_time = punch_time.replace(
+                    hour=hour, minute=minutes, month=month, day=day
+                )
             except ValueError:
                 print("Cette horaire n'est pas valide")
                 return True
