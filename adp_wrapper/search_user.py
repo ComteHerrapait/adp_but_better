@@ -1,5 +1,7 @@
 from requests import Session
 
+from adp_wrapper.auth import SessionTimeoutException
+from adp_wrapper.CLI_utils import Spinner
 from adp_wrapper.constants import URL_DETAIL_USER, URL_REFERER, URL_SEARCH_USERS
 
 
@@ -19,12 +21,17 @@ def send_search_request(session: Session, query: str):
 
 def get_user_detail(session: Session, user_id: str):
     response = session.get(URL_DETAIL_USER + user_id)
-    temp = response.json()
-    return temp
+    if "application/json" in response.headers.get("content-type", ""):
+        return response.json()
+    else:
+        raise SessionTimeoutException("Session timed out")
 
 
 def get_users_info(session: Session, query: str):
+    spinner = Spinner()
+    spinner.start()
     json_response = send_search_request(session, query)
+    print("_", end="", flush=True)
     users_raw = json_response["grouped"]["id_type"]["groups"][0]["doclist"]["docs"]
     users = []
 
@@ -40,5 +47,6 @@ def get_users_info(session: Session, query: str):
                 "details": details,
             }
         )
+    spinner.stop()
 
     return users

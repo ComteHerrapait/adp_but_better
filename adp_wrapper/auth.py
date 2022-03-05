@@ -26,6 +26,12 @@ class UnableToLoginException(Exception):
     pass
 
 
+class SessionTimeoutException(Exception):
+    """Session timed out"""
+
+    pass
+
+
 def adp_login() -> requests.Session:
     """logs in to adp, by asking for username and password through command line
     interface

@@ -2,7 +2,8 @@ from datetime import datetime
 
 from requests import Session
 
-from adp_wrapper.constants import URL_BALANCES, URL_REFERER, get_setting
+from adp_wrapper.auth import SessionTimeoutException
+from adp_wrapper.constants import DATE_FORMAT, URL_BALANCES, URL_REFERER, get_setting
 
 
 def get_balances(session: Session) -> list[dict]:
@@ -54,12 +55,17 @@ def send_balances_request(session: Session) -> dict:
 
     Returns:
         dict: response from API
+
+    Raises:
+        SessionTimeoutException
     """
     headers = {"Referer": URL_REFERER}
-    today = datetime.strftime(datetime.now(), "%Y-%m-%d")
+    today = datetime.strftime(datetime.now(), DATE_FORMAT)
     params = (("$filter", f"balanceAsOfDate eq '{today}'"),)
     url = URL_BALANCES.replace("<USER_ID>", get_setting("adp_username"))
 
     response = session.get(url, headers=headers, params=params)
-
-    return response.json()
+    if "application/json" in response.headers.get("content-type"):
+        return response.json()
+    else:
+        raise SessionTimeoutException("Session timed out")

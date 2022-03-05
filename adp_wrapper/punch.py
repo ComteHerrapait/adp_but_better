@@ -3,6 +3,7 @@ from datetime import datetime
 
 from requests import Session
 
+from adp_wrapper.auth import SessionTimeoutException
 from adp_wrapper.constants import URL_PUNCH, URL_PUNCH_SUBMIT, URL_REFERER, get_setting
 
 
@@ -18,10 +19,10 @@ def get_punch_times(s: Session) -> list[datetime]:
     params = (("entryNotes", "yes"),)  # does not seem to change anything
     response = s.get(URL_PUNCH, params=params)
 
-    try:
+    if "application/json" in response.headers.get("content-type"):
         response_json = response.json()
-    except json.decoder.JSONDecodeError:
-        exit("Error : Can't decode json. Most probably the session has expired.")
+    else:
+        raise SessionTimeoutException("Session timed out")
 
     try:
         entries = response_json["timeEntryDetails"]["entrySummary"][0]["entries"]

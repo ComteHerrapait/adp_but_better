@@ -8,8 +8,10 @@ from typing import Any
 import requests
 from requests import Session
 
+from adp_wrapper.auth import SessionTimeoutException
 from adp_wrapper.constants import (
-    ADP_DATE_FORMAT,
+    DATE_FORMAT,
+    DATETIME_FORMAT,
     URL_REFERER,
     URL_REQUEST_WFH_SUBMIT,
     URL_TIMEOFF_META,
@@ -54,6 +56,16 @@ class TimeOffEvent:
                 "shortName": self.name,
             },
         }
+
+
+@dataclass
+class TimeOffRequest:
+    id: str = ""
+    creation_date: datetime = datetime.min
+    status: str = ""  # TODO : enum
+    status_date: date = date.min
+    requestor: str = ""
+    event: TimeOffEvent = TimeOffEvent()
 
 
 class EnhancedJSONEncoder(json.JSONEncoder):
@@ -125,7 +137,7 @@ def build_body_timeoff_request(events: list[TimeOffEvent], comment: str = ""):
 
 def get_pay_codes(session: Session) -> list[TimeOffEvent]:
     raw_data = send_time_off_meta_request(session)
-    data = []
+    data: list[TimeOffEvent] = []
 
     if not raw_data:
         return data
@@ -154,40 +166,51 @@ def send_time_off_meta_request(session: Session):
 
 
 # flake8: noqa: C901
-def get_wfh_requests(session: requests.Session):
-    # TODO : study and use the filter (I don't know how it works, it ignores what I ask for)
+def get_timeoff_requests(session: requests.Session):
+
+    filter_start = datetime.strftime(datetime.min, DATE_FORMAT)
+    filter_end = datetime.strftime(datetime.max, DATE_FORMAT)
     params = (
         (
             "$filter",
-            "datePeriod/startDate ge '1970-01-05' and datePeriod/endDate le '2999-01-05'",
-            # "datePeriod/startDate ge '2020-02-06' and datePeriod/endDate le '2023-02-06' ",
-            # "datePeriod/startDate ge '2020-02-06' and datePeriod/endDate le '2023-02-06' and requestStatusCode/codeValue eq 'submitted' and requestStatusCode/codeValue eq 'pending' and requestStatusCode/codeValue eq 'cancelsubmitted' and requestStatusCode/codeValue eq 'inprogress'",
+            f"datePeriod/startDate ge '{filter_start}' and datePeriod/endDate le '{filter_end}'",
         ),
     )
 
-    response = session.get(
-        URL_TIMEOFF_REQUESTS,
-        params=params,
-    )
-    print(response.json())
-    wfh_requests = response.json()["timeOffRequests"]
-    summary = []
-    for r in wfh_requests:
+    headers = {"Referer": URL_REFERER}
+    url = URL_TIMEOFF_REQUESTS.replace("<USER_ID>", get_setting("adp_username"))
+    response = session.get(url, params=params, headers=headers)
+
+    if "application/json" not in response.headers.get("content-type", ""):
+        raise SessionTimeoutException("Session timed out")
+    timeoff_requests = response.json()["timeOffRequests"]
+
+    requests = []
+    for r in timeoff_requests:
         start = datetime.strptime(
             r["timeOffEntries"][0]["dateTimePeriod"]["startDateTime"],
-            ADP_DATE_FORMAT,
+            DATETIME_FORMAT,
         )
         end = datetime.strptime(
-            r["timeOffEntries"][0]["dateTimePeriod"]["endDateTime"], ADP_DATE_FORMAT
+            r["timeOffEntries"][0]["dateTimePeriod"]["endDateTime"], DATETIME_FORMAT
         )
-        summary.append(
-            {
-                "id": r["timeOffRequestID"],
-                "status": r["requestStatusCode"]["codeValue"],
-                "start": datetime.strftime(start, "%Y-%m-%d"),
-                "end": datetime.strftime(end, "%Y-%m-%d"),
-                "type": r["timeOffEntries"][0]["payCode"]["codeValue"],
-            }
+        event = TimeOffEvent(
+            code=r["timeOffEntries"][0]["payCode"]["codeValue"],
+            name=r["timeOffEntries"][0]["payCode"]["shortName"],
+            date_start=start,
+            date_end=end,
         )
-    summary.sort(key=lambda x: x["start"])
-    print(json.dumps(summary, indent=4))
+
+        request = TimeOffRequest(
+            id=r["timeOffRequestID"],
+            creation_date=datetime.strptime(r["requestDateTime"], DATETIME_FORMAT),
+            status=r["requestStatusCode"]["codeValue"],
+            status_date=datetime.strptime(
+                r["requestStatusCode"]["effectiveDate"], DATE_FORMAT
+            ).date(),
+            requestor=r["requestorName"]["formattedName"],
+            event=event,
+        )
+        requests.append(request)
+    requests.sort(key=lambda x: x.creation_date)
+    return requests

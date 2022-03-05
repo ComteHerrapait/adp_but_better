@@ -3,17 +3,18 @@ from datetime import datetime
 import inquirer
 from requests import Session
 
-from adp_wrapper.auth import adp_login
+from adp_wrapper.auth import SessionTimeoutException, adp_login
 from adp_wrapper.balance import get_balances
-from adp_wrapper.CLI_utils import (
+from adp_wrapper.CLI_utils import print_header
+from adp_wrapper.constants import GOODBYE_MESSAGE
+from adp_wrapper.punch import get_punch_times
+from adp_wrapper.user_commands import (
     display_punch_times,
-    print_header,
+    display_time_off_requests,
     request_time_off,
     search_users,
     validate_and_punch,
 )
-from adp_wrapper.constants import GOODBYE_MESSAGE
-from adp_wrapper.punch import get_punch_times
 
 
 def main_loop(session: Session):
@@ -27,12 +28,19 @@ def main_loop(session: Session):
                 "Get balance",
                 "Request time off",
                 "Search users",
+                "Get Timeoff Requests",
                 "Exit",
             ],
             carousel=True,
         ),
     ]
-    match inquirer.prompt(questions).get("action"):
+    answers = inquirer.prompt(questions)
+    if answers is not None:
+        answer = answers.get("action", "Exit")
+    else:
+        answer = "Exit"
+
+    match answer:
         case "Punch now":
             punch_time = datetime.now()
 
@@ -69,15 +77,19 @@ def main_loop(session: Session):
                 print(f"{balance['name']:<20}: {balance['value']} ({balance['unit']})")
             return True
 
-        case "Exit":
-            return False
-
         case "Request time off":
             if request_time_off(session):
                 print("Time off request successfully sent")
             else:
                 print("An error occured while sending the time off request")
             return True
+
+        case "Get Timeoff Requests":
+            display_time_off_requests(session)
+            return True
+
+        case "Exit":
+            return False
 
 
 if __name__ == "__main__":
@@ -91,7 +103,17 @@ if __name__ == "__main__":
     timestamps = get_punch_times(session)
     display_punch_times(timestamps)
 
-    while main_loop(session):
-        print_header(False)
+    running = True
+    while running:
+        try:
+            running = main_loop(session)
+        except SessionTimeoutException:
+            print_header(True)
+            print("Session timed out. Logging in again...")
+            session = adp_login()
+            print("\n")
+        except KeyboardInterrupt:
+            print("Program interrupted")
+            running = False
 
     exit(GOODBYE_MESSAGE)

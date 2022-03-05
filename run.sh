@@ -2,12 +2,12 @@
 
 echo "Program start."
 
-update_requirements='false'
+update_requirements="false"
 
 while getopts 'u' flag; do
     case "${flag}" in
     u)
-        update_requirements='true'
+        update_requirements="true"
         ;;
     *)
         echo "invalid argument $@"
@@ -40,7 +40,7 @@ else
     fi
 fi
 
-if [update_requirements = "true"]; then
+if [ "$update_requirements" = "true" ]; then
     # install dependancies
     echo "updating python requirements"
     .venv/bin/pip3 install -r requirements.txt
@@ -49,5 +49,4 @@ fi
 # run main script
 .venv/bin/python3 main.py
 
-pwd
 echo "Program stop."

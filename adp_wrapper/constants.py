@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import Any
 
 # Date formats
-ADP_DATE_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
+DATE_FORMAT = "%Y-%m-%d"
 
 # app name for keyring
 APP_NAME = "adp_butler"
