@@ -19,7 +19,19 @@ def send_search_request(session: Session, query: str):
     return response.json()
 
 
-def get_user_detail(session: Session, user_id: str):
+def get_user_detail(session: Session, user_id: str) -> dict:
+    """gets details of a user from adp, using its id
+
+    Args:
+        session (Session): browser session
+        user_id (str): user id
+
+    Raises:
+        SessionTimeoutException: the browser session timed out
+
+    Returns:
+        dict: user details
+    """
     response = session.get(URL_DETAIL_USER + user_id)
     if "application/json" in response.headers.get("content-type", ""):
         return response.json()
@@ -27,14 +39,27 @@ def get_user_detail(session: Session, user_id: str):
         raise SessionTimeoutException("Session timed out")
 
 
-def get_users_info(session: Session, query: str):
-    spinner = Spinner()
-    spinner.start()
+def get_users_info(session: Session, query: str, display: bool = True) -> list[dict]:
+    """returns a list of user matching the query
+
+    Args:
+        session (Session): browser session
+        query (str): query
+        display (bool, optional): display waiting spinner to console. Defaults to True.
+
+    Returns:
+        list[dict]: users matching the query
+    """
+    if display:
+        spinner = Spinner(True)
+
     json_response = send_search_request(session, query)
-    print("_", end="", flush=True)
+
+    if display:
+        print("\b:", end="")
+
     users_raw = json_response["grouped"]["id_type"]["groups"][0]["doclist"]["docs"]
     users = []
-
     for u in users_raw:
         user_id = u["sr_sv_workerID"]
         details = get_user_detail(session, user_id)
@@ -47,6 +72,8 @@ def get_users_info(session: Session, query: str):
                 "details": details,
             }
         )
-    spinner.stop()
+
+    if display:
+        spinner.stop()
 
     return users

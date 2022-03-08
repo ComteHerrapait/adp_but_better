@@ -79,7 +79,7 @@ class Spinner:
     busy = False
     delay = 0.1
     message = "Waiting"
-    start_time = time()
+    start_time = 0
     waiting_char = "."
 
     def __init__(self, start_now=False) -> None:
@@ -91,12 +91,14 @@ class Spinner:
         while self.busy:
             sleep(self.delay)
             print(self.waiting_char, end="", flush=True)
-        print(f" done ({time()-self.start_time:.2f})")
+        elapsed = time() - self.start_time
+        print(f" done ({elapsed:.2f}s)")
 
     def start(self):
         self.busy = True
-        threading.Thread(target=self.task).start()
+        self.start_time = time()
+        threading.Thread(target=self.task, name="SpinnerThread").start()
 
     def stop(self):
         self.busy = False
-        sleep(self.delay)
+        sleep(2 * self.delay)
