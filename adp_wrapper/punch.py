@@ -1,10 +1,21 @@
 import json
+import logging
 from datetime import datetime
 
 from requests import Session
 
 from adp_wrapper.auth import SessionTimeoutException
 from adp_wrapper.constants import URL_PUNCH, URL_PUNCH_SUBMIT, URL_REFERER, get_setting
+
+log = logging.getLogger(__name__)
+
+
+class PunchException(Exception):
+    def __init__(self, timestamp: datetime) -> None:
+        self.timestamp = timestamp
+        self.message = f"an error occured while punching at {timestamp.isoformat()}"
+        log.error("PunchException : " + self.message)
+        super().__init__(self.message)
 
 
 def get_punch_times(s: Session) -> list[datetime]:
@@ -22,18 +33,23 @@ def get_punch_times(s: Session) -> list[datetime]:
     if "application/json" in response.headers.get("content-type"):
         response_json = response.json()
     else:
-        raise SessionTimeoutException("Session timed out")
+        raise SessionTimeoutException()
 
-    try:
-        entries = response_json["timeEntryDetails"]["entrySummary"][0]["entries"]
-        pointages = entries[0]["entryDetail"][0]["clockSummary"]["clockEntries"]
-    except KeyError:
-        return []
+    entries: dict = response_json["timeEntryDetails"]["entrySummary"][0]
+    if "entries" in entries:
+        pointages: list = entries["entries"][0]["entryDetail"][0]["clockSummary"][
+            "clockEntries"
+        ]
+    else:
+        # value is not formatted correctly, happens when there is no punch times
+        pointages = []
 
     result = []
     for p in pointages:
         date = datetime.strptime(p["entryDateTime"], "%Y-%m-%dT%H:%M:%S%z")
         result.append(date)
+
+    log.info(f"retrieved {len(result)} punch times")
     return result
 
 
@@ -46,6 +62,9 @@ def punch(s: Session, timestamp: datetime) -> bool:
 
     Returns:
         bool: response was successful
+
+    Raises:
+        PunchException
     """
     user_id = str(get_setting("adp_username"))
 
@@ -70,4 +89,9 @@ def punch(s: Session, timestamp: datetime) -> bool:
     }
 
     response_punch = s.post(URL_PUNCH_SUBMIT, data=data_str, headers=headers)
-    return response_punch.ok
+
+    if response_punch.ok:
+        log.info(f"punch successful at {timestamp.isoformat()}")
+        return True
+    else:
+        raise PunchException(timestamp)

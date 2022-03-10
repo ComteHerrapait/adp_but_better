@@ -1,9 +1,9 @@
 import dataclasses
 import json
+import logging
 from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
-from typing import Any
 
 import requests
 from requests import Session
@@ -19,12 +19,21 @@ from adp_wrapper.constants import (
     get_setting,
 )
 
+log = logging.getLogger(__name__)
+
+
+class TimeOffRequestException(Exception):
+    def __init__(self) -> None:
+        self.message = "an error occured while requesting timeoff"
+        log.error("TimeOffRequestException : " + self.message)
+        super().__init__(self.message)
+
 
 class PeriodCode(Enum):
     morning = {"codeValue": "M", "shortName": "Matin"}
     afternoon = {"codeValue": "A", "shortName": "Apr\xE8s-midi"}
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {
             "codeValue": self.value["codeValue"],
             "shortName": self.value["shortName"],
@@ -83,16 +92,6 @@ class EnhancedJSONEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-def print_json(obj: Any, **kwargs) -> None:
-    """Prints a JSON representation of the given object.
-
-    Args:
-        obj (Any): object to print
-        **kwargs: additional arguments passed to json.dumps
-    """
-    print(json.dumps(obj, cls=EnhancedJSONEncoder, **kwargs))
-
-
 def send_timeoff_request(
     session: Session,
     events: list[TimeOffEvent],
@@ -114,7 +113,11 @@ def send_timeoff_request(
         data=data_str,
         headers=headers,
     )
-    return response.ok
+    if response.ok:
+        log.info("successfully sent timeoff request")
+        return True
+    else:
+        raise TimeOffRequestException()
 
 
 def build_body_timeoff_request(events: list[TimeOffEvent], comment: str = ""):
@@ -165,7 +168,6 @@ def send_time_off_meta_request(session: Session):
     return response.json()
 
 
-# flake8: noqa: C901
 def get_timeoff_requests(session: requests.Session):
 
     filter_start = datetime.strftime(datetime.min, DATE_FORMAT)
@@ -173,7 +175,8 @@ def get_timeoff_requests(session: requests.Session):
     params = (
         (
             "$filter",
-            f"datePeriod/startDate ge '{filter_start}' and datePeriod/endDate le '{filter_end}'",
+            f"datePeriod/startDate ge '{filter_start}'"
+            f" and datePeriod/endDate le '{filter_end}'",
         ),
     )
 
@@ -182,7 +185,7 @@ def get_timeoff_requests(session: requests.Session):
     response = session.get(url, params=params, headers=headers)
 
     if "application/json" not in response.headers.get("content-type", ""):
-        raise SessionTimeoutException("Session timed out")
+        raise SessionTimeoutException()
     timeoff_requests = response.json()["timeOffRequests"]
 
     requests = []
@@ -213,4 +216,5 @@ def get_timeoff_requests(session: requests.Session):
         )
         requests.append(request)
     requests.sort(key=lambda x: x.creation_date)
+    log.info(f"retrieved {len(requests)} timeoff requests")
     return requests

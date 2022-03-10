@@ -1,3 +1,4 @@
+import logging
 from getpass import getpass
 
 import keyring
@@ -13,23 +14,35 @@ from adp_wrapper.constants import (
     set_setting,
 )
 
+log = logging.getLogger(__name__)
+
 
 class NoPasswordFoundException(Exception):
     """no password found in keyring"""
 
-    pass
+    def __init__(self, username: str) -> None:
+        self.username = username
+        self.message = f"No password stored in keyring for '{username}'"
+        log.error("NoPasswordFoundException : " + self.message)
+        super().__init__(self.message)
 
 
 class UnableToLoginException(Exception):
     """Login to adp was not successful"""
 
-    pass
+    def __init__(self, username: str) -> None:
+        self.username = username
+        self.message = f"login failed for '{username}'"
+        log.error("UnableToLoginException : " + self.message)
+        super().__init__(self.message)
 
 
 class SessionTimeoutException(Exception):
     """Session timed out"""
 
-    pass
+    def __init__(self, *args: object) -> None:
+        log.warning("SessionTimeoutException : browser session timed out")
+        super().__init__(*args)
 
 
 def adp_login() -> requests.Session:
@@ -43,19 +56,20 @@ def adp_login() -> requests.Session:
     logged_in = False
     while not logged_in:
         try:
+            log.info("Logging in")
             username = get_username()
             password = get_password(username)
             send_login_request(session, username, password)
             logged_in = True
-        except UnableToLoginException as e:
-            print(e)
+            log.info(f"Logged in as '{username}'")
+        except UnableToLoginException:
             print("Please try again, check your credentials")
             set_setting("skip_password_prompt", False)
-        except NoPasswordFoundException as e:
-            print(e)
+        except NoPasswordFoundException:
             print("Please provide a password")
             set_setting("skip_password_prompt", False)
         except KeyboardInterrupt:
+            log.warning("application interrupted by user (ˆC) during login")
             exit(GOODBYE_MESSAGE)
     # save username if login successful
     set_setting("adp_username", username)
@@ -81,7 +95,7 @@ def send_login_request(session: requests.Session, username: str, password: str) 
 
     response_login = session.post(URL_LOGIN, data=data)
     if not response_login.ok:
-        raise UnableToLoginException(f"Unable to login to '{username}'")
+        raise UnableToLoginException(username)
 
 
 def get_username() -> str:
@@ -118,17 +132,21 @@ def get_password(username: str) -> str:
     """
     skip_password = get_setting("skip_password_prompt")
     if skip_password or ((term_value := getpass(PASSWORD_PROMPT)) == ""):
+        # password prompt skipped through config or empty response
         keyring_value = keyring.get_password(APP_NAME, username)
         if keyring_value is None:
-            raise NoPasswordFoundException("No password provided or stored in keyring")
+            raise NoPasswordFoundException(username)
         else:
             if skip_password:
                 print(PASSWORD_PROMPT + " -keyring- (auto)")
             else:
+                log.info(f"keyring : found password for '{username}'")
                 # erase the prompt line to print a message
                 print("\033[1A" + PASSWORD_PROMPT + " -keyring- " + "\033[K")
             return_value = keyring_value
     else:
+        # settings set to not skip password and non null value entered
         keyring.set_password(APP_NAME, username, term_value)
+        log.info(f"keyring : stored new password for '{username}'")
         return_value = term_value
     return return_value

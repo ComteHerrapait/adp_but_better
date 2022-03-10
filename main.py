@@ -1,3 +1,6 @@
+import json
+import logging
+import logging.config
 from datetime import datetime
 
 import inquirer
@@ -6,7 +9,7 @@ from requests import Session
 from adp_wrapper.auth import SessionTimeoutException, adp_login
 from adp_wrapper.balance import get_balances
 from adp_wrapper.CLI_utils import print_header
-from adp_wrapper.constants import GOODBYE_MESSAGE
+from adp_wrapper.constants import GOODBYE_MESSAGE, LOGGING_SETTINGS_FILE
 from adp_wrapper.punch import get_punch_times
 from adp_wrapper.user_commands import (
     display_punch_times,
@@ -34,7 +37,7 @@ def main_loop(session: Session):
             carousel=True,
         ),
     ]
-    answers = inquirer.prompt(questions)
+    answers = inquirer.prompt(questions, raise_keyboard_interrupt=True)
     if answers is not None:
         answer = answers.get("action", "Exit")
     else:
@@ -97,7 +100,26 @@ def main_loop(session: Session):
             return False
 
 
+def setup_logging():
+    """
+    Setup logging from config file or with basic config if not found
+    """
+    if LOGGING_SETTINGS_FILE.exists():
+        with LOGGING_SETTINGS_FILE.open("r") as f:
+            config = json.load(f)
+        logging.config.dictConfig(config)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    log = logging.getLogger(__name__)
+    log.debug("logger initialized")
+
+
 if __name__ == "__main__":
+    setup_logging()
+    log = logging.getLogger(__name__)
+    log.info("starting app")
+
     # Welcome message
     print_header(True)
 
@@ -119,7 +141,8 @@ if __name__ == "__main__":
             timestamps = get_punch_times(session)
             display_punch_times(timestamps)
         except KeyboardInterrupt:
-            print("Program interrupted")
+            log.warning("application interrupted by user (ˆC)")
             running = False
 
+    log.info("quitting app")
     exit(GOODBYE_MESSAGE)

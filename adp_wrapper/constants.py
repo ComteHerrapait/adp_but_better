@@ -1,7 +1,11 @@
 import json
+import logging
 from datetime import timedelta
 from pathlib import Path
 from typing import Any
+
+log = logging.getLogger(__name__)
+
 
 # Date formats
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S%z"
@@ -29,7 +33,7 @@ URL_TIMEOFF_REQUESTS = "https://mon.adp.com/time/v3/workers/<USER_ID>/time-off-r
 URL_TIMEOFF_META = "https://mon.adp.com/events/time/v1/time-off-request.submit/meta"
 URL_REFERER = "https://mon.adp.com/redbox/3.10.1.2"
 
-
+LOGGING_SETTINGS_FILE = Path("logging.json")
 SETTINGS_FILE = Path("config.json")
 DEFAULT_SETTINGS = {
     "adp_username": "",
@@ -39,6 +43,7 @@ DEFAULT_SETTINGS = {
 
 def reset_settings() -> None:
     """reset the config file to default values"""
+    log.debug("settings : reset to default values")
     for k, v in DEFAULT_SETTINGS.items():
         set_setting(k, v)
 
@@ -62,6 +67,8 @@ def get_setting(key: str) -> Any:
         set_setting(key, DEFAULT_SETTINGS[key])
         value = DEFAULT_SETTINGS[key]
 
+    log.debug(f"settings : read {key} -> {value}")
+
     return value
 
 
@@ -72,6 +79,8 @@ def set_setting(key: str, value: Any) -> None:
         key (str): name of the setting to set
         value (Any): value of the setting
     """
+    log.debug(f"settings : write {key} -> {value}")
+
     if SETTINGS_FILE.exists():
         with SETTINGS_FILE.open("r") as f:
             settings = json.load(f)

@@ -1,8 +1,12 @@
+import logging
+
 from requests import Session
 
 from adp_wrapper.auth import SessionTimeoutException
 from adp_wrapper.CLI_utils import Spinner
 from adp_wrapper.constants import URL_DETAIL_USER, URL_REFERER, URL_SEARCH_USERS
+
+log = logging.getLogger(__name__)
 
 
 def send_search_request(session: Session, query: str):
@@ -36,7 +40,7 @@ def get_user_detail(session: Session, user_id: str) -> dict:
     if "application/json" in response.headers.get("content-type", ""):
         return response.json()
     else:
-        raise SessionTimeoutException("Session timed out")
+        raise SessionTimeoutException()
 
 
 def get_users_info(session: Session, query: str, display: bool = True) -> list[dict]:
@@ -76,4 +80,5 @@ def get_users_info(session: Session, query: str, display: bool = True) -> list[d
     if display:
         spinner.stop()
 
+    log.info(f"searched for '{query}' in users, got {len(users)} results")
     return users

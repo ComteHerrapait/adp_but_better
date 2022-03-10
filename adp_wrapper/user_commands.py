@@ -77,7 +77,7 @@ def search_users(session: Session) -> list[dict]:
             message="search query",
         ),
     ]
-    answers = inquirer.prompt(questions)
+    answers = inquirer.prompt(questions, raise_keyboard_interrupt=True)
     query = answers["query"]
     users = get_users_info(session, query)
     return users
@@ -89,7 +89,7 @@ def request_time_off(session: Session) -> None:
     event_code = "TTRAV2"  # TODO : ask user to select an event
     event = next((event for event in available_codes if event.code == event_code), None)
     if event is None:
-        raise Exception(f"no pay code matching the code {event_code}")
+        raise KeyError(f"no pay code matching the code {event_code}")
 
     # select start date and period
     dates_start = [date.today() + timedelta(days=i) for i in range(30)]
@@ -108,7 +108,7 @@ def request_time_off(session: Session) -> None:
             carousel=True,
         ),
     ]
-    answers_start = inquirer.prompt(questions_start)
+    answers_start = inquirer.prompt(questions_start, raise_keyboard_interrupt=True)
     dates_end = [answers_start.get("start_date") + timedelta(days=i) for i in range(30)]
     questions_end = [
         inquirer.List(
@@ -125,7 +125,7 @@ def request_time_off(session: Session) -> None:
             carousel=True,
         ),
     ]
-    answers_end = inquirer.prompt(questions_end)
+    answers_end = inquirer.prompt(questions_end, raise_keyboard_interrupt=True)
 
     event.date_start = answers_start.get("start_date")
     if answers_start.get("start_period") == "morning":
@@ -133,7 +133,7 @@ def request_time_off(session: Session) -> None:
     elif answers_start.get("start_period") == "afternoon":
         event.period_start = PeriodCode.afternoon
     else:
-        raise Exception("invalid start period")
+        raise ValueError("invalid start period")
 
     # select end date and period
     event.date_end = answers_end.get("end_date")
@@ -142,11 +142,11 @@ def request_time_off(session: Session) -> None:
     elif answers_end.get("end_period") == "afternoon":
         event.period_end = PeriodCode.afternoon
     else:
-        raise Exception("invalid end period")
+        raise ValueError("invalid end period")
 
     # comment
     question = [inquirer.Text("comment", message="Comment :", ignore=True)]
-    comment = inquirer.prompt(question)["comment"]
+    comment = inquirer.prompt(question, raise_keyboard_interrupt=True)["comment"]
 
     # submit request
     success = send_timeoff_request(session, [event], comment)

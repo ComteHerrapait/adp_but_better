@@ -1,9 +1,13 @@
+import json
+import logging
 from datetime import datetime
 
 from requests import Session
 
 from adp_wrapper.auth import SessionTimeoutException
 from adp_wrapper.constants import DATE_FORMAT, URL_BALANCES, URL_REFERER, get_setting
+
+log = logging.getLogger(__name__)
 
 
 def get_balances(session: Session) -> list[dict]:
@@ -43,6 +47,7 @@ def get_balances(session: Session) -> list[dict]:
                 ]
 
         summary.append(parsed_item)
+    log.info(f"successfully retrieved balances : {json.dumps(summary)}")
 
     return summary
 
@@ -68,4 +73,4 @@ def send_balances_request(session: Session) -> dict:
     if "application/json" in response.headers.get("content-type"):
         return response.json()
     else:
-        raise SessionTimeoutException("Session timed out")
+        raise SessionTimeoutException()
