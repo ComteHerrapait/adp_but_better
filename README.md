@@ -10,6 +10,8 @@ I also try to implement workflows as a test to gain experience using them.
 
 ## How to install
 
+You can use the automatic install script : `install.sh`
+
 ### MacOS
 
 - install python >3.10 on your machine

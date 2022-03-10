@@ -37,6 +37,12 @@ DEFAULT_SETTINGS = {
 }
 
 
+def reset_settings() -> None:
+    """reset the config file to default values"""
+    for k, v in DEFAULT_SETTINGS.items():
+        set_setting(k, v)
+
+
 def get_setting(key: str) -> Any:
     """get a setting from the config file
 
@@ -47,7 +53,7 @@ def get_setting(key: str) -> Any:
         Any: value of the setting
     """
     if SETTINGS_FILE.exists():
-        with open("config.json", "r") as f:
+        with SETTINGS_FILE.open("r") as f:
             value = json.load(f).get(key, None)
     else:
         value = None
