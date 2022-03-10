@@ -116,7 +116,8 @@ if __name__ == "__main__":
             print_header(True)
             print("Session timed out. Logging in again...")
             session = adp_login()
-            print("\n")
+            timestamps = get_punch_times(session)
+            display_punch_times(timestamps)
         except KeyboardInterrupt:
             print("Program interrupted")
             running = False
