@@ -1,4 +1,5 @@
 import dataclasses
+import os
 import threading
 from datetime import date, datetime, timedelta
 from enum import Enum
@@ -47,7 +48,12 @@ def print_header(clear: bool = True) -> None:
     """
     if clear:
         print("\033[H\033[J", end="")
-    art.tprint("ADP but better\n", font="tarty1")
+    width = os.get_terminal_size().columns
+    # adapt text size to terminal width
+    if width > 101:
+        art.tprint("ADP but better\n", font="tarty1")
+    else:
+        art.tprint("ADP but better\n", font="tarty2")
 
 
 def format_timedelta(timedelta: timedelta) -> str:

@@ -25,6 +25,7 @@ def display_punch_times(timestamps: list[datetime]) -> None:
             for example : today's punch times
     """
     art.tprint("\ntoday :", font="tarty2")
+    print(datetime.now().strftime("%B %d %H:%M"))
 
     if timestamps:
         worked_time, remaining_time = get_daily_stats(timestamps)
