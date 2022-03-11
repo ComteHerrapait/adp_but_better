@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 ORANGE='\033[1;33m'
@@ -10,9 +12,9 @@ ERROR="${RED} > ${NC}"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "${OK}runing MacOS install script"
-    py_error="$(python3 -c 'import sys; exit(1) if sys.version_info.major < 3 and sys.version_info.minor < 10 else exit(0)')"
-    if [[ true ]]; then
-        echo "${ERROR}python version error = ${py_error}"
+    py_error="$(python3 -c 'import sys; print(1) if sys.version_info.major < 3 and sys.version_info.minor < 10 else print(0)')"
+    if [[ $py_error == "1" ]]; then
+        echo "${ERROR}python version error = ${BLUE}$(python3 --version)${NC}"
         echo "${ERROR}please install python in version >= 3.10.0"
         echo "${ERROR}using 'brew install python@3.10'"
         exit 1
