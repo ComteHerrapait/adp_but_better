@@ -22,7 +22,7 @@ cd ${BASH_SOURCE%/*}
 if [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/master)" ]; then
     echo "ADP But Better is up to date"
 
-else
+elif [ "$(git rev-parse --abbrev-ref HEAD)" == "master" ]; then
     echo "ADP But Better is NOT up to date with master"
     read -p "Would you like to update using git ? (y/n)" -n 1 -r
     echo
@@ -37,6 +37,14 @@ else
         exit 1
     else
         echo "running out of date version..."
+    fi
+else
+    echo "You are running an non-release version, please switch to the master branch"
+    read -p "run anyway ? (y/n)" -n 1 -r
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "runnning branch : $(git rev-parse --abbrev-ref HEAD)"
+    else
+        exit 0
     fi
 fi
 
