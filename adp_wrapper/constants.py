@@ -32,6 +32,9 @@ URL_BALANCES = "https://mon.adp.com/time/v3/workers/<USER_ID>/time-off-balances"
 URL_TIMEOFF_REQUESTS = "https://mon.adp.com/time/v3/workers/<USER_ID>/time-off-requests"
 URL_TIMEOFF_META = "https://mon.adp.com/events/time/v1/time-off-request.submit/meta"
 URL_REFERER = "https://mon.adp.com/redbox/3.10.1.2"
+URL_NEW_GITHUB_ISSUE = (
+    "https://github.com/ComteHerrapait/adp_but_better/issues/new/choose"
+)
 
 LOGGING_SETTINGS_FILE = Path("logging.json")
 SETTINGS_FILE = Path("config.json")

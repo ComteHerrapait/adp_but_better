@@ -12,6 +12,7 @@ from adp_wrapper.CLI_utils import (
     request_time_off,
     validate_and_punch,
 )
+from adp_wrapper.constants import URL_NEW_GITHUB_ISSUE
 from adp_wrapper.search_user import get_users_info
 
 log = logging.getLogger(__name__)
@@ -80,6 +81,13 @@ def cmd_get_timeoff_requests(session: Session) -> bool:
     return True
 
 
+def cmd_send_feedback(session: Session) -> bool:
+    print("Create an issue here :")
+    print(URL_NEW_GITHUB_ISSUE)
+    print("or use the original website : https://mon.adp.com\n")
+    return True
+
+
 def cmd_exit(session: Session) -> bool:
     return False
 
@@ -91,5 +99,6 @@ COMMAND_LIST: dict[str, Callable[[Session], bool]] = {
     "Request time off": cmd_request_timeoff,
     "Search users": cmd_search_users,
     "Get timeoff requests": cmd_get_timeoff_requests,
+    "I have feedback": cmd_send_feedback,
     "Exit": cmd_exit,
 }
