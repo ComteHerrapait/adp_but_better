@@ -4,6 +4,7 @@ import logging
 from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
+from typing import Any
 
 import requests
 from requests import Session
@@ -50,7 +51,7 @@ class TimeOffEvent:
     period_start: PeriodCode = PeriodCode.morning
     period_end: PeriodCode = PeriodCode.afternoon
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {
             "timeOffPolicyCode": {"codeValue": self.code},
             "durationTypeCode": {"codeValue": "dayPeriodEntry"},
@@ -80,7 +81,7 @@ class TimeOffRequest:
 class EnhancedJSONEncoder(json.JSONEncoder):
     """Enhances the JSONEncoder class to handle dataclasses, datetime and Enum."""
 
-    def default(self, o):
+    def default(self, o: Any) -> (dict[str, Any] | str | Any):
         if dataclasses.is_dataclass(o):
             return dataclasses.asdict(o)
         elif isinstance(o, datetime):
@@ -96,7 +97,7 @@ def send_timeoff_request(
     session: Session,
     events: list[TimeOffEvent],
     comment: str = "",
-):
+) -> bool:
 
     request_body = build_body_timeoff_request(events, comment)
 
@@ -120,7 +121,7 @@ def send_timeoff_request(
         raise TimeOffRequestException()
 
 
-def build_body_timeoff_request(events: list[TimeOffEvent], comment: str = ""):
+def build_body_timeoff_request(events: list[TimeOffEvent], comment: str = "") -> dict:
     return {
         "events": [
             {
@@ -159,7 +160,7 @@ def get_pay_codes(session: Session) -> list[TimeOffEvent]:
     return data
 
 
-def send_time_off_meta_request(session: Session):
+def send_time_off_meta_request(session: Session) -> Any:
 
     headers = {"Referer": URL_REFERER}
 
@@ -168,7 +169,7 @@ def send_time_off_meta_request(session: Session):
     return response.json()
 
 
-def get_timeoff_requests(session: requests.Session):
+def get_timeoff_requests(session: requests.Session) -> list:
 
     filter_start = datetime.strftime(datetime.min, DATE_FORMAT)
     filter_end = datetime.strftime(datetime.max, DATE_FORMAT)

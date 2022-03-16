@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime
+from typing import Any
 
 from requests import Session
 
@@ -34,17 +35,17 @@ def get_balances(session: Session) -> list[dict]:
         }
         balance = item["policyBalances"][0]
 
-        match parsed_item.get("name"):
-            case "Débit crédit":
-                parsed_item["description"] = balance["balanceTypeCode"]["shortName"]
-                parsed_item["value"] = balance["totalTime"]["timeValue"]
-                parsed_item["unit"] = balance["totalTime"]["nameCode"]["codeValue"]
-            case "RTT Salarié":
-                parsed_item["description"] = balance["balanceTypeCode"]["shortName"]
-                parsed_item["value"] = balance["totalQuantity"]["quantityValue"]
-                parsed_item["unit"] = balance["totalQuantity"]["unitTimeCode"][
-                    "codeValue"
-                ]
+        policy_type: str = parsed_item.get("name") or "invalid"
+        if policy_type == "Débit crédit":
+            parsed_item["description"] = balance["balanceTypeCode"]["shortName"]
+            parsed_item["value"] = balance["totalTime"]["timeValue"]
+            parsed_item["unit"] = balance["totalTime"]["nameCode"]["codeValue"]
+        elif policy_type == "RTT Salarié":
+            parsed_item["description"] = balance["balanceTypeCode"]["shortName"]
+            parsed_item["value"] = balance["totalQuantity"]["quantityValue"]
+            parsed_item["unit"] = balance["totalQuantity"]["unitTimeCode"]["codeValue"]
+        else:
+            raise ValueError("Invalid policy type")
 
         summary.append(parsed_item)
     log.info(f"successfully retrieved balances : {json.dumps(summary)}")
@@ -52,14 +53,14 @@ def get_balances(session: Session) -> list[dict]:
     return summary
 
 
-def send_balances_request(session: Session) -> dict:
+def send_balances_request(session: Session) -> Any:
     """sends the request to get the balances from adp API
 
     Args:
         session (Session): browser session
 
     Returns:
-        dict: response from API
+        Any: response from API
 
     Raises:
         SessionTimeoutException
@@ -70,7 +71,7 @@ def send_balances_request(session: Session) -> dict:
     url = URL_BALANCES.replace("<USER_ID>", get_setting("adp_username"))
 
     response = session.get(url, headers=headers, params=params)
-    if "application/json" in response.headers.get("content-type"):
+    if "application/json" in response.headers.get("content-type", ""):
         return response.json()
     else:
         raise SessionTimeoutException()
