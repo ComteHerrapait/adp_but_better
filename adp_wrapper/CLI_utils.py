@@ -141,7 +141,6 @@ def display_punch_times(timestamps: list[datetime]) -> None:
             date_string = timestamp.strftime("%H:%M")
             print(f"{'🟢' if i % 2 == 0 else '🔴'} : {date_string}")
 
-        print(f">> {len(timestamps)} punches today. ")
         print(f"time worked today : {format_timedelta(worked_time)} ", end="")
         time_sign_indicator = "restant" if (remaining_time > timedelta()) else "sup"
         print(f"({format_timedelta(remaining_time)} {time_sign_indicator})")
