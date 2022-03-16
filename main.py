@@ -7,12 +7,12 @@ from requests import Session
 
 from adp_wrapper.auth import SessionTimeoutException, adp_login
 from adp_wrapper.CLI_utils import display_punch_times, print_header
-from adp_wrapper.user_commands import COMMAND_LIST, cmd_exit
 from adp_wrapper.constants import GOODBYE_MESSAGE, LOGGING_SETTINGS_FILE
 from adp_wrapper.punch import get_punch_times
+from adp_wrapper.user_commands import COMMAND_LIST, cmd_exit
 
 
-def main_loop(session: Session):
+def main_loop(session: Session) -> bool:
     questions = [
         inquirer.List(
             "action",
@@ -29,12 +29,12 @@ def main_loop(session: Session):
 
     user_command = COMMAND_LIST.get(answer)
     if user_command is not None:
-        return user_command(session=session)
+        return user_command(session)
     else:
-        return cmd_exit(session=session)
+        return cmd_exit(session)
 
 
-def setup_logging():
+def setup_logging() -> None:
     """
     Setup logging from config file or with basic config if not found
     """
