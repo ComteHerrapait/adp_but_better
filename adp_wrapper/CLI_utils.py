@@ -89,7 +89,11 @@ def user_validation_punch(punch_time: datetime) -> bool:
         bool: user validated
     """
     punch_time_str = punch_time.strftime("%A(%d) %H:%M")
-    return inquirer.confirm(f"Punching at {punch_time_str}")
+    validation = inquirer.confirm(f"Punching at {punch_time_str}")
+    if isinstance(validation, bool):
+        return validation
+    else:
+        return False
 
 
 class Spinner:
