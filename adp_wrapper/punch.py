@@ -30,7 +30,7 @@ def get_punch_times(s: Session) -> list[datetime]:
     params = (("entryNotes", "yes"),)  # does not seem to change anything
     response = s.get(URL_PUNCH, params=params)
 
-    if "application/json" in response.headers.get("content-type"):
+    if "application/json" in response.headers.get("content-type", ""):
         response_json = response.json()
     else:
         raise SessionTimeoutException()

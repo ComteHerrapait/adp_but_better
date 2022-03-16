@@ -7,12 +7,12 @@ import inquirer
 from requests import Session
 
 from adp_wrapper.balance import get_balances
-from adp_wrapper.search_user import get_users_info
 from adp_wrapper.CLI_utils import (
     display_time_off_requests,
     request_time_off,
     validate_and_punch,
 )
+from adp_wrapper.search_user import get_users_info
 
 log = logging.getLogger(__name__)
 
@@ -33,11 +33,10 @@ def cmd_punch_specific_time(session: Session) -> bool:
     day = int(input("Day : ") or punch_time.day)
     try:
         punch_time = punch_time.replace(hour=hour, minute=minutes, month=month, day=day)
+        validate_and_punch(session, punch_time)
     except ValueError:
         print("Cette horaire n'est pas valide")
-        return True
 
-    validate_and_punch(session, punch_time)
     return True
 
 
@@ -91,6 +90,6 @@ COMMAND_LIST: dict[str, Callable[[Session], bool]] = {
     "Get balance": cmd_get_balances,
     "Request time off": cmd_request_timeoff,
     "Search users": cmd_search_users,
-    "Get Timeoff Requests": cmd_get_timeoff_requests,
+    "Get timeoff requests": cmd_get_timeoff_requests,
     "Exit": cmd_exit,
 }

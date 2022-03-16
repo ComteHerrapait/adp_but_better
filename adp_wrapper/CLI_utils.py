@@ -29,7 +29,7 @@ These functions serve to display and interact with the user through the terminal
 class EnhancedJSONEncoder(JSONEncoder):
     """Enhances the JSONEncoder class to handle dataclasses, datetime and Enum."""
 
-    def default(self, o):
+    def default(self, o: Any) -> (dict[str, Any] | str | Any):
         if dataclasses.is_dataclass(o):
             return dataclasses.asdict(o)
         elif isinstance(o, datetime):
@@ -96,14 +96,14 @@ class Spinner:
     busy = False
     delay = 0.1
     message = "Waiting"
-    start_time = 0
+    start_time = 0.0
     waiting_char = "."
 
-    def __init__(self, start_now=False) -> None:
+    def __init__(self, start_now: bool = False) -> None:
         if start_now:
             self.start()
 
-    def task(self):
+    def task(self) -> None:
         print(self.message, end=" ")
         while self.busy:
             sleep(self.delay)
@@ -111,12 +111,12 @@ class Spinner:
         elapsed = time() - self.start_time
         print(f" done ({elapsed:.2f}s)")
 
-    def start(self):
+    def start(self) -> None:
         self.busy = True
         self.start_time = time()
         threading.Thread(target=self.task, name="SpinnerThread").start()
 
-    def stop(self):
+    def stop(self) -> None:
         self.busy = False
         sleep(2 * self.delay)
 
@@ -166,7 +166,7 @@ def validate_and_punch(session: Session, punch_time: datetime) -> None:
         print("Punch cancelled")
 
 
-def request_time_off(session: Session) -> None:
+def request_time_off(session: Session) -> bool:
     # select event
     available_codes = get_pay_codes(session)
     event_code = "TTRAV2"  # TODO : ask user to select an event

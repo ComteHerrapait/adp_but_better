@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from requests import Session
 
@@ -9,7 +10,7 @@ from adp_wrapper.constants import URL_DETAIL_USER, URL_REFERER, URL_SEARCH_USERS
 log = logging.getLogger(__name__)
 
 
-def send_search_request(session: Session, query: str):
+def send_search_request(session: Session, query: str) -> Any:
     params = (("q", query), ("searchType", "advance"))
 
     headers = {"Referer": URL_REFERER}
@@ -23,7 +24,7 @@ def send_search_request(session: Session, query: str):
     return response.json()
 
 
-def get_user_detail(session: Session, user_id: str) -> dict:
+def get_user_detail(session: Session, user_id: str) -> Any:
     """gets details of a user from adp, using its id
 
     Args:
@@ -34,7 +35,7 @@ def get_user_detail(session: Session, user_id: str) -> dict:
         SessionTimeoutException: the browser session timed out
 
     Returns:
-        dict: user details
+        Any: user details
     """
     response = session.get(URL_DETAIL_USER + user_id)
     if "application/json" in response.headers.get("content-type", ""):
