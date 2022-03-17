@@ -19,7 +19,7 @@ You can use the automatic install script : `install.sh`
 
 ### MacOS
 
-- install python >3.10 on your machine
+- install python >3.9 on your machine
 - pull project from git
 - create a virtual environment called .venv
 - install dependancies from requirements.txt
