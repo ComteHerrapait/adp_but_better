@@ -57,6 +57,8 @@ if [ "$update_requirements" = "true" ]; then
     .venv/bin/pip3 install -r requirements.txt
 fi
 
+echo "setup over, launching python script"
+
 # run main script
 .venv/bin/python3 main.py
 
