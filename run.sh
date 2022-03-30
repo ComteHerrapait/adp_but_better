@@ -19,6 +19,9 @@ done
 # move to script directory
 cd ${BASH_SOURCE%/*}
 
+git fetch
+echo "fetched git history"
+
 if [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/master)" ]; then
     echo "ADP But Better is up to date"
 
