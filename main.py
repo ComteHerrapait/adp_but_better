@@ -1,6 +1,7 @@
 import json
 import logging
 import logging.config
+from http.client import RemoteDisconnected
 
 import inquirer
 from requests import Session
@@ -68,7 +69,7 @@ if __name__ == "__main__":
     while running:
         try:
             running = main_loop(session)
-        except SessionTimeoutException:
+        except (SessionTimeoutException, RemoteDisconnected):
             print_header(True)
             print("Session timed out. Logging in again...")
             session = adp_login()
