@@ -28,24 +28,30 @@ def get_balances(session: Session) -> list[dict]:
 
     for item in raw_balances:
         parsed_item = {
-            "name": item["timeOffPolicyCode"]["longName"],
-            "description": None,
+            "adp_name": item["timeOffPolicyCode"]["longName"],
+            "my_name": None,
             "value": None,
             "unit": None,
         }
         balance = item["policyBalances"][0]
 
-        policy_type: str = parsed_item.get("name") or "invalid"
+        policy_type: str = parsed_item.get("adp_name") or "invalid"
         if policy_type == "Débit crédit":
-            parsed_item["description"] = balance["balanceTypeCode"]["shortName"]
+            parsed_item["my_name"] = "Débit Crédit"
             parsed_item["value"] = balance["totalTime"]["timeValue"]
             parsed_item["unit"] = balance["totalTime"]["nameCode"]["codeValue"]
         elif policy_type == "RTT Salarié":
-            parsed_item["description"] = balance["balanceTypeCode"]["shortName"]
+            parsed_item["my_name"] = "RTT"
+            parsed_item["value"] = balance["totalQuantity"]["quantityValue"]
+            parsed_item["unit"] = balance["totalQuantity"]["unitTimeCode"]["codeValue"]
+        elif policy_type == "CP écoulés":
+            parsed_item["my_name"] = "Congés Payés"
             parsed_item["value"] = balance["totalQuantity"]["quantityValue"]
             parsed_item["unit"] = balance["totalQuantity"]["unitTimeCode"]["codeValue"]
         else:
-            raise ValueError("Invalid policy type")
+            parsed_item["my_name"] = "ERR (" + policy_type + ")"
+            parsed_item["value"] = "N/A"
+            parsed_item["unit"] = "N/A"
 
         summary.append(parsed_item)
     log.info(f"successfully retrieved balances : {json.dumps(summary)}")
