@@ -66,7 +66,10 @@ def get_users_info(session: Session, query: str, display: bool = True) -> list[d
     users_raw = json_response["grouped"]["id_type"]["groups"][0]["doclist"]["docs"]
     users = []
     for u in users_raw:
-        user_id = u["sr_sv_workerID"]
+        user_detail_url = u.get("r_sv_uri")
+        if not user_detail_url:
+            continue
+        user_id = user_detail_url.split("/")[-1]
         details = get_user_detail(session, user_id)
         users.append(
             {
