@@ -27,7 +27,8 @@ URL_PUNCH = "https://mon.adp.com/v1_0/O/A/timeEntryDetails"
 URL_PUNCH_SUBMIT = "https://mon.adp.com/v1_0/O/A/timeEntry"
 URL_REQUEST_WFH_SUBMIT = "https://mon.adp.com/events/time/v1/time-off-request.submit"
 URL_SEARCH_USERS = "https://mon.adp.com/core/v1/search"
-URL_DETAIL_USER = "https://mon.adp.com/redboxapi/core/profile/v1/associates/"
+URL_DETAIL_USER_ASSOCIATE = "https://mon.adp.com/redboxapi/core/profile/v1/associates/"
+URL_DETAIL_USER_WORKER = "https://mon.adp.com/hr/v2/workers/"
 URL_BALANCES = "https://mon.adp.com/time/v3/workers/<USER_ID>/time-off-balances"
 URL_TIMEOFF_REQUESTS = "https://mon.adp.com/time/v3/workers/<USER_ID>/time-off-requests"
 URL_TIMEOFF_META = "https://mon.adp.com/events/time/v1/time-off-request.submit/meta"
@@ -41,6 +42,18 @@ SETTINGS_FILE = Path("config.json")
 DEFAULT_SETTINGS = {
     "adp_username": "",
     "skip_password_prompt": False,
+}
+
+REGEX_USER_ID = r"[a-z]+\-\w{3}"
+
+USER_INFO_CUSTOM_FIELD_TRANSLATIONS = {
+    "collaborationType": "statut",
+    "recoursReason": "recours",
+    "contractType": "contrat",
+    "activity": "secteur",
+    "remunerationType": "salaire",
+    "workSchedule": "horaire",
+    "monthlyHours": "h/mois",
 }
 
 

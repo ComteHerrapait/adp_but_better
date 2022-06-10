@@ -1,5 +1,6 @@
 import logging
 import logging.config
+import re
 from datetime import datetime
 from typing import Callable
 
@@ -12,8 +13,8 @@ from adp_wrapper.CLI_utils import (
     request_time_off,
     validate_and_punch,
 )
-from adp_wrapper.constants import URL_NEW_GITHUB_ISSUE
-from adp_wrapper.search_user import get_users_info
+from adp_wrapper.constants import REGEX_USER_ID, URL_NEW_GITHUB_ISSUE
+from adp_wrapper.search_user import get_user_detail, get_users_id, print_user_details
 
 log = logging.getLogger(__name__)
 
@@ -42,6 +43,8 @@ def cmd_punch_specific_time(session: Session) -> bool:
 
 
 def cmd_search_users(session: Session) -> bool:
+    print("tip: search a name to get the corresponding user id")
+    print("     search the user id to get the full details")
     questions = [
         inquirer.Text(
             "query",
@@ -49,12 +52,21 @@ def cmd_search_users(session: Session) -> bool:
         ),
     ]
     answers = inquirer.prompt(questions, raise_keyboard_interrupt=True)
-    query = answers["query"]
-    users = get_users_info(session, query)
-    if not users:
-        print("No users matching query found")
-    for user in users:
-        print(f"* {user['name']:<20} -> {user['id']}")
+    query = answers["query"].strip()
+
+    pattern = re.compile(REGEX_USER_ID)
+    if pattern.match(query):
+        print("query pattern matching user id, loading user details")
+        user_advanced_details = get_user_detail(session, query)
+        print_user_details(user_advanced_details)
+        input("\npress ENTER to continue.")
+
+    else:
+        users = get_users_id(session, query)
+        if not users:
+            print("No users matching query found")
+        for user in users:
+            print(f"* {user[0]:<20} -> {user[1]}")
     return True
 
 
