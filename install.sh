@@ -15,8 +15,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     py_error="$(python3 -c 'import sys; print(1) if sys.version_info.major < 3 and sys.version_info.minor < 10 else print(0)')"
     if [[ $py_error == "1" ]]; then
         echo "${ERROR}python version error = ${BLUE}$(python3 --version)${NC}"
-        echo "${ERROR}please install python in version >= 3.10.0"
-        echo "${ERROR}using 'brew install python@3.10'"
+        echo "${ERROR}please install python in version >= 3.9"
+        echo "${ERROR}using 'brew install python@3.9'"
         exit 1
     else
         echo "${OK}valid python version detected = ${BLUE}$(python3 --version)${NC}"
@@ -51,5 +51,5 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
 else
 
-    echo "${ERROR}operating system not yet supported for automatic install"
+    echo "${ERROR}operating system (${OSTYPE}) not yet supported for automatic install"
 fi
