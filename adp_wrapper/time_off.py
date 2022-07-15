@@ -11,6 +11,7 @@ from requests import Session
 
 from adp_wrapper.auth import SessionTimeoutException
 from adp_wrapper.constants import (
+    API_VERSION,
     DATE_FORMAT,
     DATETIME_FORMAT,
     URL_REFERER,
@@ -105,7 +106,7 @@ def send_timeoff_request(
         "Accept": "application/json, text/plain, */*",
         "Content-Type": "application/json;charset=UTF-8",
         "Origin": "https://mon.adp.com",
-        "Referer": "https://mon.adp.com/redbox/3.10.1.2/",
+        "Referer": URL_REFERER,
     }
 
     data_str = json.dumps(request_body, separators=(",", ":"))

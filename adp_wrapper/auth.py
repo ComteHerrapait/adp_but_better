@@ -69,7 +69,7 @@ def adp_login() -> requests.Session:
             print("Please provide a password")
             set_setting("skip_password_prompt", False)
         except KeyboardInterrupt:
-            log.warning("application interrupted by user (ˆC) during login")
+            log.warning("application interrupted by user (^C) during login")
             exit(GOODBYE_MESSAGE)
     # save username if login successful
     set_setting("adp_username", username)

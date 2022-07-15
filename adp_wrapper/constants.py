@@ -22,6 +22,7 @@ GOODBYE_MESSAGE = "\nGoodbye."
 DAILY_WORK_TIME = timedelta(hours=7, minutes=24)
 
 # URLs for ADP services
+API_VERSION = "3.10.1.2"
 URL_LOGIN = "https://mon.adp.com/ipclogin/1/loginform.fcc"
 URL_PUNCH = "https://mon.adp.com/v1_0/O/A/timeEntryDetails"
 URL_PUNCH_SUBMIT = "https://mon.adp.com/v1_0/O/A/timeEntry"
@@ -32,7 +33,7 @@ URL_DETAIL_USER_WORKER = "https://mon.adp.com/hr/v2/workers/"
 URL_BALANCES = "https://mon.adp.com/time/v3/workers/<USER_ID>/time-off-balances"
 URL_TIMEOFF_REQUESTS = "https://mon.adp.com/time/v3/workers/<USER_ID>/time-off-requests"
 URL_TIMEOFF_META = "https://mon.adp.com/events/time/v1/time-off-request.submit/meta"
-URL_REFERER = "https://mon.adp.com/redbox/3.10.1.2"
+URL_REFERER = "https://mon.adp.com/redbox/" + API_VERSION
 URL_NEW_GITHUB_ISSUE = (
     "https://github.com/ComteHerrapait/adp_but_better/issues/new/choose"
 )
