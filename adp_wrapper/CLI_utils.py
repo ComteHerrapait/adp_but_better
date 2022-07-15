@@ -19,7 +19,7 @@ from adp_wrapper.time_off import (
     get_timeoff_requests,
     send_timeoff_request,
 )
-from adp_wrapper.time_processing import get_daily_stats
+from adp_wrapper.time_processing import get_daily_stats, process_end_of_day_time
 
 """
 These functions serve to display and interact with the user through the terminal.
@@ -41,7 +41,7 @@ class EnhancedJSONEncoder(JSONEncoder):
         return super().default(o)
 
 
-def print_json(obj: Any, **kwargs) -> None:
+def print_json(obj: Any, **kwargs: Any) -> None:
     """Prints a JSON representation of the given object.
 
     Args:
@@ -134,6 +134,7 @@ def display_punch_times(timestamps: list[datetime]) -> None:
     """
     art.tprint("\ntoday :", font="tarty2")
     print(datetime.now().strftime("%B %d %H:%M"))
+    clocked_in = len(timestamps) % 2 != 0
 
     if timestamps:
         worked_time, remaining_time = get_daily_stats(timestamps)
@@ -142,10 +143,14 @@ def display_punch_times(timestamps: list[datetime]) -> None:
             print(f"{'🟢' if i % 2 == 0 else '🔴'} : {date_string}")
 
         print(f"time worked today : {format_timedelta(worked_time)} ", end="")
-        time_sign_indicator = "restant" if (remaining_time > timedelta()) else "sup"
+
+        time_sign_indicator = "remaining" if (remaining_time > timedelta()) else "extra"
         print(f"({format_timedelta(remaining_time)} {time_sign_indicator})")
 
-        print(f"You are clocked {'OUT' if len(timestamps) % 2 == 0 else 'IN'}")
+        end_of_day_str = process_end_of_day_time(remaining_time).strftime("%H:%M")
+        print(f"your day ends at : {end_of_day_str}")
+
+        print(f"You are clocked {'IN' if clocked_in else 'OUT'}")
     else:
         print(">> No punches today. You are clocked OUT")
     print("\n")

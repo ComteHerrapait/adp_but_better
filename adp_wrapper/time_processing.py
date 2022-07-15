@@ -77,3 +77,18 @@ def get_daily_stats(timestamps: list[datetime]) -> tuple[timedelta, timedelta]:
     worked_time = process_worked_time(timestamps)
     balance = process_time_remaining(worked_time)
     return worked_time, balance
+
+
+def process_end_of_day_time(time_remaining: timedelta) -> datetime:
+    """processes the hour at which your day can be considered done
+
+    Args:
+        time_remaining (timedelta): time left on your day
+
+    Returns:
+        datetime: hour of your day's end
+    """
+
+    now = datetime.now()
+    end_of_day = now + time_remaining
+    return end_of_day
