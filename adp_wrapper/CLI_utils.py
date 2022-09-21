@@ -1,7 +1,7 @@
 import dataclasses
 import os
 import threading
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from enum import Enum
 from json import JSONEncoder, dumps
 from time import sleep, time
@@ -76,7 +76,19 @@ def format_timedelta(timedelta: timedelta) -> str:
     Returns:
         str: formatted timedelta
     """
-    return str(abs(timedelta))[:-3]
+    days, hours, minutes = (
+        timedelta.days,
+        timedelta.seconds // 3600,
+        (timedelta.seconds // 60) % 60,
+    )
+    formatted_string = ""
+    if days:
+        formatted_string += f"{days}d "
+    if hours:
+        formatted_string += f"{hours}h"
+    if minutes:
+        formatted_string += f"{minutes}min"
+    return formatted_string
 
 
 def user_validation_punch(punch_time: datetime) -> bool:
@@ -139,9 +151,16 @@ def display_punch_times(timestamps: list[datetime]) -> None:
     if timestamps:
         worked_time, remaining_time = get_daily_stats(timestamps)
         for i, timestamp in enumerate(timestamps):
-            date_string = timestamp.strftime("%H:%M")
-            print(f"{'🟢' if i % 2 == 0 else '🔴'} : {date_string}")
+            date_string, trailing_str = timestamp.strftime("%H:%M"), ""
 
+            # process trailing info for last punch
+            if i == len(timestamps) - 1:
+                time_since_punch = datetime.now(timezone.utc) - timestamps[-1]
+                trailing_str = f"({format_timedelta(time_since_punch)} ago)"
+
+            print(f"{'🟢' if i % 2 == 0 else '🔴'} : {date_string} {trailing_str}")
+
+        print()
         print(f"time worked today : {format_timedelta(worked_time)} ", end="")
 
         time_sign_indicator = "remaining" if (remaining_time > timedelta()) else "extra"
