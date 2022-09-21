@@ -3,16 +3,15 @@ from datetime import timedelta
 from adp_wrapper.CLI_utils import format_timedelta
 
 
-
 class TestFormatTimeDelta:
     def test_all_fields(self) -> None:
-        input = timedelta(days=1, hours=2,minutes=3,seconds=4)
+        input = timedelta(days=1, hours=2, minutes=3, seconds=4)
         output = format_timedelta(input)
 
         assert output == "1d 2h03"
 
     def test_all_fields_negative(self) -> None:
-        input = - timedelta(days=1, hours=2,minutes=3,seconds=4)
+        input = -timedelta(days=1, hours=2, minutes=3, seconds=4)
         output = format_timedelta(input)
 
         assert output == "1d 2h03"
@@ -58,4 +57,3 @@ class TestFormatTimeDelta:
         output = format_timedelta(input)
 
         assert output == "7h43"
-

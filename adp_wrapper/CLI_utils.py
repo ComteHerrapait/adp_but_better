@@ -177,7 +177,9 @@ def display_punch_times(timestamps: list[datetime]) -> None:
         if i == len(timestamps) - 1:
             time_since_punch = datetime.now(timezone.utc) - timestamps[-1]
             time_since_punch_str = format_timedelta(time_since_punch)
-            trailing_str = f"({time_since_punch_str} ago)" if time_since_punch_str != "" else "(now)"
+            trailing_str = (
+                f"({time_since_punch_str} ago)" if time_since_punch_str else "(now)"
+            )
 
         print(f"{'🟢' if i % 2 == 0 else '🔴'} : {date_string} {trailing_str}")
 
