@@ -37,6 +37,16 @@ class UnableToLoginException(Exception):
         super().__init__(self.message)
 
 
+class AccountErrorException(Exception):
+    """ADP account has problems"""
+
+    def __init__(self, username: str) -> None:
+        self.username = username
+        self.message = f"problems with ADP account '{username}'"
+        log.error("AccountErrorException : " + self.message)
+        super().__init__(self.message)
+
+
 class SessionTimeoutException(Exception):
     """Session timed out"""
 
@@ -65,6 +75,12 @@ def adp_login() -> requests.Session:
         except UnableToLoginException:
             print("Please try again, check your credentials")
             set_setting("skip_password_prompt", False)
+        except AccountErrorException:
+            print("Your ADP account has errors")
+            print("please use the web interface : https://mon.adp.com/")
+            set_setting("skip_password_prompt", False)
+            log.warning("closing application because ADP account has errors")
+            exit(GOODBYE_MESSAGE)
         except NoPasswordFoundException:
             print("Please provide a password")
             set_setting("skip_password_prompt", False)
@@ -94,8 +110,14 @@ def send_login_request(session: requests.Session, username: str, password: str) 
     }
 
     response_login = session.post(URL_LOGIN, data=data)
-    if not response_login.ok:
+
+    bad_login = response_login.url.endswith("?REASON=BADLOGIN")
+    account_error = response_login.url.endswith("pwdservice/accountError")
+
+    if not response_login.ok or bad_login:
         raise UnableToLoginException(username)
+    if account_error:
+        raise AccountErrorException(username)
 
 
 def get_username() -> str:
