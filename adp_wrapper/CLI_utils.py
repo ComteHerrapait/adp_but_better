@@ -165,30 +165,35 @@ def display_punch_times(timestamps: list[datetime]) -> None:
     print(datetime.now().strftime("%B %d %H:%M"))
     clocked_in = len(timestamps) % 2 != 0
 
-    if timestamps:
-        worked_time, remaining_time = get_daily_stats(timestamps)
-        for i, timestamp in enumerate(timestamps):
-            date_string, trailing_str = timestamp.strftime("%H:%M"), ""
+    if not timestamps:
+        print(">> No punches today. You are clocked OUT\n")
+        return
 
-            # process trailing info for last punch
-            if i == len(timestamps) - 1:
-                time_since_punch = datetime.now(timezone.utc) - timestamps[-1]
-                trailing_str = f"({format_timedelta(time_since_punch)} ago)"
+    worked_time, remaining_time = get_daily_stats(timestamps)
+    for i, timestamp in enumerate(timestamps):
+        date_string, trailing_str = timestamp.strftime("%H:%M"), ""
 
-            print(f"{'🟢' if i % 2 == 0 else '🔴'} : {date_string} {trailing_str}")
+        # process trailing info for last punch
+        if i == len(timestamps) - 1:
+            time_since_punch = datetime.now(timezone.utc) - timestamps[-1]
+            time_since_punch_str = format_timedelta(time_since_punch)
+            trailing_str = f"({time_since_punch_str} ago)" if time_since_punch_str != "" else "(now)"
 
-        print()
-        print(f"time worked today : {format_timedelta(worked_time)} ", end="")
+        print(f"{'🟢' if i % 2 == 0 else '🔴'} : {date_string} {trailing_str}")
 
-        time_sign_indicator = "remaining" if (remaining_time > timedelta()) else "extra"
-        print(f"({format_timedelta(remaining_time)} {time_sign_indicator})")
+    print()
+    print(f"time worked today : {format_timedelta(worked_time)} ", end="")
 
-        end_of_day_str = process_end_of_day_time(remaining_time).strftime("%H:%M")
+    time_sign_indicator = "remaining" if (remaining_time > timedelta()) else "extra"
+    print(f"({format_timedelta(remaining_time)} {time_sign_indicator})")
+
+    if remaining_time > timedelta(0):
+        time_eod = process_end_of_day_time(remaining_time)
+        end_of_day_str = time_eod.strftime("%H:%M")
         print(f"your day ends at : {end_of_day_str}")
 
-        print(f"You are clocked {'IN' if clocked_in else 'OUT'}")
-    else:
-        print(">> No punches today. You are clocked OUT")
+    print(f"You are clocked {'IN' if clocked_in else 'OUT'}")
+
     print("\n")
 
 
