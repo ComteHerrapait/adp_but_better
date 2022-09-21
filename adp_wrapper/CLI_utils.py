@@ -76,18 +76,35 @@ def format_timedelta(timedelta: timedelta) -> str:
     Returns:
         str: formatted timedelta
     """
+    formatted_string = ""
+    timedelta = abs(timedelta)
+
     days, hours, minutes = (
         timedelta.days,
         timedelta.seconds // 3600,
         (timedelta.seconds // 60) % 60,
     )
-    formatted_string = ""
-    if days:
-        formatted_string += f"{days}d "
-    if hours:
-        formatted_string += f"{hours}h"
-    if minutes:
-        formatted_string += f"{minutes}min"
+    fields_filled = bool(days) + bool(hours) + bool(minutes)
+
+    if fields_filled == 0:
+        pass
+    if fields_filled == 1:
+        if days:
+            formatted_string = f"{days} days"
+        if hours:
+            formatted_string = f"{hours} hours"
+        if minutes:
+            formatted_string = f"{minutes} min"
+    elif fields_filled == 2:
+        if not days:
+            formatted_string = f"{hours}h{minutes:02d}"
+        if not hours:
+            formatted_string = f"{days}d 0h{minutes:02d}"
+        if not minutes:
+            formatted_string = f"{days}d {hours}h00"
+    elif fields_filled == 3:
+        formatted_string = f"{days}d {hours}h{minutes:02d}"
+
     return formatted_string
 
 
