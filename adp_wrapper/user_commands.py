@@ -76,7 +76,10 @@ def cmd_get_balances(session: Session) -> bool:
         print("No balance found")
 
     for balance in balances:
-        print(f"{balance['my_name']:<20}: {balance['value']} ({balance['unit']})")
+        print(f"{balance.get('longName')}:")
+        for value in balance.get("values"):
+            print(f"- {value['name']:<30} : {value['value']} {value['unit']}")
+    print("\n\n")
     return True
 
 

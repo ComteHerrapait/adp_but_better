@@ -22,7 +22,7 @@ GOODBYE_MESSAGE = "\nGoodbye."
 DAILY_WORK_TIME = timedelta(hours=7, minutes=24)
 
 # URLs for ADP services
-API_VERSION = "3.10.1.2"
+API_VERSION = "3.12.1.1"
 URL_LOGIN = "https://mon.adp.com/ipclogin/1/loginform.fcc"
 URL_PUNCH = "https://mon.adp.com/v1_0/O/A/timeEntryDetails"
 URL_PUNCH_SUBMIT = "https://mon.adp.com/v1_0/O/A/timeEntry"
